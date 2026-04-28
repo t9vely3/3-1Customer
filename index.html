@@ -426,33 +426,39 @@
     .card-fav.active svg { fill: var(--amber); stroke: var(--amber); }
 
     .card-body {
-      padding: 18px 18px 20px;
+      padding: 14px 16px;
       flex: 1;
-      display: flex; flex-direction: column;
+      display: flex; flex-direction: row; align-items: center; justify-content: space-between;
+      gap: 10px;
     }
-    .card-subcat {
-      font-size: 10px; letter-spacing: .25em; text-transform: uppercase;
-      color: var(--amber); font-weight: 500; margin-bottom: 8px;
+    .card-body-compact .card-title {
+      margin-bottom: 0;
+      flex: 1;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
     .card-title {
       font-family: var(--serif);
-      font-size: 17px; font-weight: 700; line-height: 1.35;
-      color: var(--ink-strong); margin-bottom: 8px;
+      font-size: 15px; font-weight: 700; line-height: 1.4;
+      color: var(--ink-strong);
       letter-spacing: -.01em;
     }
-    .card-desc {
-      font-size: 13px; color: var(--muted); line-height: 1.55;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-      margin-bottom: 14px;
+    .card-edit-actions {
+      display: flex; gap: 4px;
+      flex-shrink: 0;
     }
-    .card-foot {
-      margin-top: auto;
-      display: flex; justify-content: space-between; align-items: center;
-      padding-top: 12px;
-      border-top: 1px solid rgba(14,21,37,0.06);
-      font-size: 11px; color: var(--muted-light);
+    .card-edit-btn {
+      width: 26px; height: 26px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all .15s;
     }
-    .card-meta { display: flex; gap: 10px; align-items: center; }
+    .card-edit-btn:hover { border-color: var(--line-strong); color: var(--ink); }
 
     /* ============ Empty state ============ */
     .empty {
@@ -887,6 +893,103 @@
     @media (max-width: 480px) {
       .home-grid { grid-template-columns: 1fr; }
       .home-title { font-size: 32px; }
+    }
+
+    /* ============ SubCategory Landing (분류 카드 그리드) ============ */
+    .subcat-landing { padding: 32px 56px 80px; }
+    .subcat-landing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      max-width: 920px;
+    }
+    .subcat-card {
+      background: var(--bg-paper);
+      border: 1px solid var(--line);
+      padding: 28px 28px 24px;
+      cursor: pointer;
+      position: relative;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      min-height: 168px;
+      display: flex; flex-direction: column;
+    }
+    .subcat-card:hover {
+      border-color: var(--amber);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(14,21,37,0.06);
+    }
+    .subcat-card-num {
+      font-family: var(--serif);
+      font-size: 28px; font-weight: 700; font-style: italic;
+      color: var(--amber);
+      line-height: 1; margin-bottom: 16px;
+    }
+    .subcat-card-title {
+      font-size: 19px; font-weight: 700;
+      color: var(--ink-strong);
+      margin-bottom: 6px;
+      letter-spacing: -.015em;
+    }
+    .subcat-card-meta {
+      font-size: 12px; color: var(--muted);
+      margin-bottom: 14px; line-height: 1.5;
+    }
+    .subcat-card-foot {
+      margin-top: auto;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: .1em;
+    }
+    .subcat-card-foot .arrow {
+      color: var(--amber); font-size: 16px;
+    }
+    .subcat-card-actions {
+      position: absolute; top: 12px; right: 12px;
+      display: flex; gap: 4px;
+      opacity: 0; transition: opacity .15s;
+    }
+    .subcat-card:hover .subcat-card-actions { opacity: 1; }
+    .subcat-card-action {
+      width: 24px; height: 24px;
+      background: var(--bg-paper); border: 1px solid var(--line);
+      color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 11px;
+    }
+    .subcat-card-action:hover { color: var(--ink); border-color: var(--ink); }
+    .subcat-add-card {
+      background: transparent;
+      border: 1px dashed var(--line-strong);
+      padding: 28px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      min-height: 168px;
+    }
+    .subcat-add-card:hover { border-color: var(--ink); color: var(--ink); border-style: solid; }
+
+    /* ============ SubCategory Detail Page (분류의 노션 페이지) ============ */
+    .subcat-page {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .subcat-page-cover {
+      height: 120px;
+      background: linear-gradient(135deg, rgba(184,132,45,0.18), rgba(14,21,37,0.06));
+    }
+    .subcat-page-body {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 28px 36px 60px;
+    }
+
+    @media (max-width: 820px) {
+      .subcat-landing { padding: 24px; }
+      .subcat-landing-grid { grid-template-columns: 1fr; }
+      .subcat-page-body { padding: 24px 20px 60px; }
     }
 
     /* ============ Detail Page (Notion-style) ============ */
@@ -1581,7 +1684,6 @@ function PdfPreview({ url }) {
 /* Card */
 function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, editMode, subCatName }) {
   const thumb = pickThumb(item);
-  const sectionMeta = getSectionMeta(sectionKey);
   return (
     <div className="card" onClick={() => onOpen(item)}>
       <div className="card-thumb">
@@ -1590,7 +1692,6 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, 
         ) : (
           <span className="card-thumb-placeholder">{(item.title || '?').slice(0,1).toUpperCase()}</span>
         )}
-        <div className="card-thumb-badge">{sectionMeta.name || '자료'}</div>
         <button
           className={'card-fav ' + (isFav ? 'active' : '')}
           onClick={(e) => { e.stopPropagation(); onToggleFav(item); }}
@@ -1599,33 +1700,24 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, 
           <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
         </button>
       </div>
-      <div className="card-body">
-        {subCatName && <div className="card-subcat">{subCatName}</div>}
+      <div className="card-body card-body-compact">
         <div className="card-title">{item.title || '제목 없음'}</div>
-        {item.desc && <div className="card-desc">{item.desc}</div>}
-        <div className="card-foot">
-          <div className="card-meta">
-            {item.files && item.files.length > 0 && <span>📎 {item.files.length}</span>}
-            {item.videoUrl && <span>▶ 영상</span>}
-            {item.url && <span>🔗 링크</span>}
+        {editMode && (
+          <div className="card-edit-actions">
+            <button className="card-edit-btn"
+              onClick={(e)=>{e.stopPropagation();onEdit(item);}} title="편집">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75z"/><path d="M14.06 6.19l3.75 3.75"/>
+              </svg>
+            </button>
+            <button className="card-edit-btn"
+              onClick={(e)=>{e.stopPropagation();onDelete(item);}} title="삭제">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>
+              </svg>
+            </button>
           </div>
-          {editMode && (
-            <div style={{display:'flex',gap:6}}>
-              <button className="card-fav" style={{position:'static',width:24,height:24}}
-                onClick={(e)=>{e.stopPropagation();onEdit(item);}} title="편집">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75z"/><path d="M14.06 6.19l3.75 3.75"/>
-                </svg>
-              </button>
-              <button className="card-fav" style={{position:'static',width:24,height:24}}
-                onClick={(e)=>{e.stopPropagation();onDelete(item);}} title="삭제">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
@@ -1917,7 +2009,29 @@ function MediaPreview({ file, onClose }) {
   } else if (isVideoFile(file.name)) {
     body = <video src={url} controls autoPlay style={mediaStyle} />;
   } else if (isPdfFile(file.name)) {
-    body = <div style={{maxWidth: 900, width: '100%'}}><PdfPreview url={url} /></div>;
+    body = (
+      <div className="modal-preview-empty" style={{padding: 40}}>
+        <div className="mark">📄</div>
+        <p style={{marginBottom: 8, color: 'var(--on-dark)', fontSize: 16, fontWeight: 600}}>{file.name}</p>
+        <p style={{marginBottom: 20, color: 'var(--on-dark-muted)', fontSize: 13}}>PDF 파일은 새 창에서 열어 보세요.</p>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            padding: '10px 22px',
+            background: 'var(--amber-soft)',
+            color: 'var(--dark)',
+            textDecoration: 'none',
+            fontSize: 12,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            fontWeight: 600
+          }}
+        >↗ 새 창에서 열기</a>
+      </div>
+    );
   } else {
     body = (
       <div className="modal-preview-empty">
@@ -2026,6 +2140,210 @@ function RichEditor({ value, onChange, placeholder }) {
     </>
   );
 }
+
+/* ============ SubCategory Page (분류 자체의 노션 페이지 + 자료 그리드) ============ */
+function SubCategoryPage({
+  sectionKey, sub, data, editMode,
+  onBack, onSaveSub, onDelete,
+  activeSubSub, setActiveSubSub,
+  subSubCategories,
+  onAddSubSub, onRenameSubSub, onDeleteSubSub,
+  onCardOpen, onToggleFav, isFavId,
+  onCardEdit, onCardDelete,
+  onNewItem,
+  search
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(sub);
+
+  useEffect(() => { setDraft(sub); setEditing(false); }, [sub.id]);
+
+  const sec = data.sectionData[sectionKey] || {};
+  const allItems = sec.items || [];
+  const itemsInSub = allItems.filter(it => String(it.subId) === String(sub.id));
+  const filtered = useMemo(() => {
+    let items = itemsInSub;
+    if (activeSubSub !== 'all') {
+      items = items.filter(it => String(it.subSubId || '') === String(activeSubSub));
+    }
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      items = items.filter(it => {
+        const body = (it.body || '').replace(/<[^>]*>/g, ' ');
+        const haystack = [it.title, it.desc, body].filter(Boolean).join(' ').toLowerCase();
+        return haystack.includes(q);
+      });
+    }
+    return items;
+  }, [itemsInSub, activeSubSub, search]);
+
+  function setF(key, val) { setDraft(prev => ({ ...prev, [key]: val })); }
+
+  function saveDraft() {
+    if (!draft.name || !draft.name.trim()) {
+      alert('분류 이름을 입력하세요.');
+      return;
+    }
+    onSaveSub({ ...draft, name: draft.name.trim(), updatedAt: Date.now() });
+    setEditing(false);
+  }
+
+  return (
+    <div className="subcat-page">
+      <div className="detail-topbar">
+        <div className="breadcrumb">
+          <span className="crumb" onClick={onBack}>{getSectionMeta(sectionKey).name}</span>
+          <span className="sep">›</span>
+          <span className="current">{sub.name}</span>
+        </div>
+        <div className="detail-actions">
+          {editMode && !editing && (
+            <button className="detail-btn" onClick={() => setEditing(true)}>분류 편집</button>
+          )}
+          {editing && (
+            <>
+              <button className="detail-btn" onClick={() => { setDraft(sub); setEditing(false); }}>취소</button>
+              <button className="detail-btn amber" onClick={saveDraft}>저장</button>
+            </>
+          )}
+          {editMode && !editing && (
+            <button className="detail-btn danger" onClick={() => onDelete(sub)}>분류 삭제</button>
+          )}
+          <button className="detail-btn" onClick={onBack}>← 분류 목록</button>
+        </div>
+      </div>
+
+      <div className="subcat-page-cover"></div>
+
+      <div className="subcat-page-body">
+        <div className="detail-eyebrow">{getSectionMeta(sectionKey).name}</div>
+
+        {editing ? (
+          <input
+            className="detail-title-input"
+            value={draft.name || ''}
+            onChange={e => setF('name', e.target.value)}
+            placeholder="분류 이름"
+          />
+        ) : (
+          <h1 className="detail-title">{sub.name}</h1>
+        )}
+
+        {/* Properties (간단한 메타) */}
+        {(editing || sub.tagline) && (
+          <div className="props">
+            <div className="props-row">
+              <div className="props-label">한 줄 소개</div>
+              <div className="props-value">
+                {editing ? (
+                  <input
+                    type="text"
+                    value={draft.tagline || ''}
+                    onChange={e => setF('tagline', e.target.value)}
+                    placeholder="예: 출판물 · 잡지 · 브랜딩"
+                  />
+                ) : (sub.tagline || '')}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notion-style body */}
+        <div className="body-section">
+          <div className="body-label">— 분류 소개</div>
+          {editing ? (
+            <RichEditor
+              value={draft.body || ''}
+              onChange={(html) => setF('body', html)}
+              placeholder="이 분류에 대한 설명을 자유롭게 작성하세요. 헤딩 · 목록 · 강조 인용 등을 사용할 수 있습니다."
+            />
+          ) : (
+            sub.body
+              ? <div className="body-readonly" dangerouslySetInnerHTML={{ __html: sub.body }} />
+              : null
+          )}
+        </div>
+
+        {/* 자료 영역: 3단계 사이드바 + 카드 그리드 */}
+        <div style={{marginTop: 36}}>
+          <div className="body-label" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <span>— 자료 ({filtered.length})</span>
+            {editMode && (
+              <button className="detail-btn amber" onClick={onNewItem}>+ 새 자료</button>
+            )}
+          </div>
+
+          <div className="section-with-tier" style={{marginTop: 14}}>
+            <aside className="tier-side">
+              <div className="tier-side-label">하위 분류</div>
+              <div className="tier-side-list">
+                <button
+                  className={'tier-side-item ' + (activeSubSub === 'all' ? 'active' : '')}
+                  onClick={() => setActiveSubSub('all')}
+                >
+                  <span>전체</span>
+                  <span className="num">{itemsInSub.length}</span>
+                </button>
+                {subSubCategories.map(ss => {
+                  const c = itemsInSub.filter(it => String(it.subSubId || '') === String(ss.id)).length;
+                  return (
+                    <button
+                      key={ss.id}
+                      className={'tier-side-item ' + (String(activeSubSub) === String(ss.id) ? 'active' : '')}
+                      onClick={() => setActiveSubSub(ss.id)}
+                      onContextMenu={(e) => {
+                        if (!editMode) return;
+                        e.preventDefault();
+                        const action = prompt('1: 이름 변경 / 2: 삭제', '1');
+                        if (action === '1') onRenameSubSub(ss);
+                        else if (action === '2') onDeleteSubSub(ss);
+                      }}
+                    >
+                      <span>{ss.name}</span>
+                      <span className="num">{c}</span>
+                    </button>
+                  );
+                })}
+                {editMode && (
+                  <button className="tier-side-add" onClick={onAddSubSub}>+ 하위 분류</button>
+                )}
+              </div>
+            </aside>
+
+            <div>
+              {filtered.length === 0 ? (
+                <div className="empty">
+                  <div className="empty-mark">∅</div>
+                  <div className="empty-title">자료가 없습니다</div>
+                  <div className="empty-text">
+                    {editMode ? '+ 새 자료 버튼으로 등록하세요.' : '편집 모드에서 자료를 등록할 수 있습니다.'}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid">
+                  {filtered.map(item => (
+                    <Card
+                      key={item.id}
+                      item={item}
+                      sectionKey={sectionKey}
+                      onOpen={(it)=>onCardOpen({...it, _section: sectionKey})}
+                      onToggleFav={onToggleFav}
+                      isFav={isFavId(item.id)}
+                      onEdit={(it)=>onCardEdit({...it, _section: sectionKey})}
+                      onDelete={(it)=>onCardDelete({...it, _section: sectionKey})}
+                      editMode={editMode}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 /* ============ Detail Page ============ */
 function Detail({ item, sectionKey, data, onClose, onSave, onDelete, onToggleFav, isFav, onPreviewMedia, editMode }) {
@@ -2234,29 +2552,51 @@ function Detail({ item, sectionKey, data, onClose, onSave, onDelete, onToggleFav
             )}
             {files.length > 0 && (
               <div className="detail-media-grid">
-                {files.map(f => (
-                  <div key={f.id} className="detail-media-item">
-                    <div className="detail-media-thumb" onClick={() => onPreviewMedia(f)}>
-                      {isImageFile(f.name) && f.directUrl
-                        ? <img src={f.directUrl} alt="" />
-                        : isVideoFile(f.name) ? '🎬'
-                        : isPdfFile(f.name) ? '📄'
-                        : '📎'}
-                    </div>
-                    <div className="detail-media-info">
-                      <div className="type">
-                        {isImageFile(f.name) ? '이미지' : isVideoFile(f.name) ? '영상' : isPdfFile(f.name) ? 'PDF' : '파일'}
+                {files.map(f => {
+                  const isImg = isImageFile(f.name);
+                  const isVid = isVideoFile(f.name);
+                  const isPdf = isPdfFile(f.name);
+                  function handleClick() {
+                    if (isImg || isVid) {
+                      onPreviewMedia(f);
+                    } else if (f.directUrl) {
+                      // PDF and others: open in new tab
+                      window.open(f.directUrl, '_blank', 'noopener,noreferrer');
+                    }
+                  }
+                  return (
+                    <div key={f.id} className="detail-media-item">
+                      <div className="detail-media-thumb" onClick={handleClick}>
+                        {isImg && f.directUrl
+                          ? <img src={f.directUrl} alt="" />
+                          : isVid ? '🎬'
+                          : isPdf ? '📄'
+                          : '📎'}
                       </div>
-                      <div className="name" title={f.name}>{f.name}</div>
-                      {editing && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); removeFile(f.id); }}
-                          style={{marginTop:4, fontSize:10, background:'transparent', border:'none', color:'var(--rose)', cursor:'pointer', padding: 0}}
-                        >삭제</button>
-                      )}
+                      <div className="detail-media-info">
+                        <div className="type">
+                          {isImg ? '이미지' : isVid ? '영상' : isPdf ? 'PDF' : '파일'}
+                        </div>
+                        <div className="name" title={f.name}>{f.name}</div>
+                        {(isPdf || (!isImg && !isVid)) && f.directUrl && (
+                          <a
+                            href={f.directUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{display:'inline-block', marginTop:4, fontSize:10, color:'var(--amber)', textDecoration:'none', borderBottom:'1px solid rgba(184,132,45,0.3)'}}
+                          >새 창에서 열기 →</a>
+                        )}
+                        {editing && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeFile(f.id); }}
+                            style={{marginTop:4, marginLeft:8, fontSize:10, background:'transparent', border:'none', color:'var(--rose)', cursor:'pointer', padding: 0}}
+                          >삭제</button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -2646,6 +2986,15 @@ function App() {
     await persist(next);
   }
 
+  async function saveSubCategory(updatedSub) {
+    const next = JSON.parse(JSON.stringify(data));
+    const sec = next.sectionData[activeSection];
+    sec.subCategories = (sec.subCategories || []).map(s =>
+      String(s.id) === String(updatedSub.id) ? { ...s, ...updatedSub } : s
+    );
+    await persist(next);
+  }
+
   async function renameSubCategory(sub) {
     const name = prompt('분류 이름 수정', sub.name);
     if (!name || name === sub.name) return;
@@ -2897,148 +3246,38 @@ function App() {
                   <div className="header-meta">
                     <span>{currentSection.sub || '자주 보여주는 자료 모음'}</span>
                     <span className="dot"></span>
-                    <span>{filteredItems.length}건</span>
+                    <span>
+                      {isFavView
+                        ? `${filteredItems.length}건`
+                        : `${subCategories.length}개 분류 · ${allItems.length}건`}
+                    </span>
                   </div>
                 </div>
                 <div className="header-actions">
-                  {!isFavView && editMode && (
-                    <button className="btn amber" onClick={openNew}>+ 새 자료</button>
+                  {!isFavView && !activeSubObj && editMode && (
+                    <button className="btn ghost" onClick={addSubCategory}>+ 분류 추가</button>
                   )}
                 </div>
               </header>
 
-              {/* 2단계 chips */}
-              {!isFavView && (
-                <div className="subcat-bar">
-                  <button
-                    className={'subcat-chip ' + (activeSub === 'all' ? 'active' : '')}
-                    onClick={()=>setActiveSub('all')}
-                  >
-                    전체 <span className="chip-count">({allItems.length})</span>
-                  </button>
-                  {subCategories.map(sub => {
-                    const c = allItems.filter(it => String(it.subId) === String(sub.id)).length;
-                    return (
-                      <button key={sub.id}
-                              className={'subcat-chip ' + (String(activeSub) === String(sub.id) ? 'active' : '')}
-                              onClick={()=>setActiveSub(sub.id)}
-                              onContextMenu={(e)=>{
-                                if (!editMode) return;
-                                e.preventDefault();
-                                const action = prompt('1: 이름 변경 / 2: 삭제', '1');
-                                if (action === '1') renameSubCategory(sub);
-                                else if (action === '2') deleteSubCategory(sub);
-                              }}>
-                        {sub.name} <span className="chip-count">({c})</span>
-                      </button>
-                    );
-                  })}
-                  {editMode && (
-                    <button className="subcat-add" onClick={addSubCategory}>+ 분류 추가</button>
-                  )}
-                </div>
-              )}
-
-              {/* 3단계: only when sub is selected */}
-              {!isFavView && activeSubObj ? (
-                <div className="section-with-tier">
-                  <aside className="tier-side">
-                    <div className="tier-side-label">{activeSubObj.name} ›</div>
-                    <div className="tier-side-list">
-                      <button
-                        className={'tier-side-item ' + (activeSubSub === 'all' ? 'active' : '')}
-                        onClick={() => setActiveSubSub('all')}
-                      >
-                        <span>전체</span>
-                        <span className="num">{allItems.filter(it => String(it.subId) === String(activeSub)).length}</span>
-                      </button>
-                      {subSubCategories.map(ss => {
-                        const c = allItems.filter(it => String(it.subId) === String(activeSub) && String(it.subSubId || '') === String(ss.id)).length;
-                        return (
-                          <button
-                            key={ss.id}
-                            className={'tier-side-item ' + (String(activeSubSub) === String(ss.id) ? 'active' : '')}
-                            onClick={() => setActiveSubSub(ss.id)}
-                            onContextMenu={(e) => {
-                              if (!editMode) return;
-                              e.preventDefault();
-                              const action = prompt('1: 이름 변경 / 2: 삭제', '1');
-                              if (action === '1') renameSubSubCategory(ss);
-                              else if (action === '2') deleteSubSubCategory(ss);
-                            }}
-                          >
-                            <span>{ss.name}</span>
-                            <span className="num">{c}</span>
-                          </button>
-                        );
-                      })}
-                      {editMode && (
-                        <button className="tier-side-add" onClick={addSubSubCategory}>+ 하위 분류</button>
-                      )}
-                    </div>
-                  </aside>
-
-                  <div>
-                    <div className="grid-wrap">
-                      {filteredItems.length === 0 ? (
-                        <div className="empty">
-                          <div className="empty-mark">∅</div>
-                          <div className="empty-title">자료가 없습니다</div>
-                          <div className="empty-text">
-                            {search ? '검색 조건과 일치하는 자료가 없습니다.' :
-                              editMode ? '+ 새 자료 버튼으로 등록하세요.' : '편집 모드에서 자료를 등록할 수 있습니다.'}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="grid">
-                          {filteredItems.map(item => {
-                            const sectionKey = item._section || activeSection;
-                            const subs = data.sectionData[sectionKey] ? data.sectionData[sectionKey].subCategories : [];
-                            const sub = subs.find(s => String(s.id) === String(item.subId));
-                            return (
-                              <Card
-                                key={item.id}
-                                item={item}
-                                sectionKey={sectionKey}
-                                subCatName={sub ? sub.name : null}
-                                onOpen={(it)=>setDetailItem({...it, _section: sectionKey})}
-                                onToggleFav={toggleFav}
-                                isFav={isFav(item.id)}
-                                onEdit={(it)=>setDetailItem({...it, _section: sectionKey})}
-                                onDelete={(it)=>deleteItem({...it, _section: sectionKey})}
-                                editMode={editMode}
-                              />
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ) : (
+              {isFavView ? (
+                /* 즐겨찾기: 그냥 그리드 */
                 <div className="grid-wrap">
                   {filteredItems.length === 0 ? (
                     <div className="empty">
                       <div className="empty-mark">∅</div>
-                      <div className="empty-title">자료가 없습니다</div>
-                      <div className="empty-text">
-                        {search ? '검색 조건과 일치하는 자료가 없습니다.' :
-                          isFavView ? '카드의 별 아이콘을 눌러 즐겨찾기에 추가하세요.' :
-                          editMode ? '+ 새 자료 버튼으로 등록하세요.' : '편집 모드에서 자료를 등록할 수 있습니다.'}
-                      </div>
+                      <div className="empty-title">즐겨찾기가 없습니다</div>
+                      <div className="empty-text">카드의 별 아이콘을 눌러 즐겨찾기에 추가하세요.</div>
                     </div>
                   ) : (
                     <div className="grid">
                       {filteredItems.map(item => {
                         const sectionKey = item._section || activeSection;
-                        const subs = data.sectionData[sectionKey] ? data.sectionData[sectionKey].subCategories : [];
-                        const sub = subs.find(s => String(s.id) === String(item.subId));
                         return (
                           <Card
                             key={item.id}
                             item={item}
                             sectionKey={sectionKey}
-                            subCatName={sub ? sub.name : null}
                             onOpen={(it)=>setDetailItem({...it, _section: sectionKey})}
                             onToggleFav={toggleFav}
                             isFav={isFav(item.id)}
@@ -3048,6 +3287,82 @@ function App() {
                           />
                         );
                       })}
+                    </div>
+                  )}
+                </div>
+              ) : activeSubObj ? (
+                /* 분류가 선택됨 → 분류 페이지 (노션식) */
+                <SubCategoryPage
+                  sectionKey={activeSection}
+                  sub={activeSubObj}
+                  data={data}
+                  editMode={editMode}
+                  onBack={() => setActiveSub('all')}
+                  onSaveSub={saveSubCategory}
+                  onDelete={deleteSubCategory}
+                  activeSubSub={activeSubSub}
+                  setActiveSubSub={setActiveSubSub}
+                  subSubCategories={subSubCategories}
+                  onAddSubSub={addSubSubCategory}
+                  onRenameSubSub={renameSubSubCategory}
+                  onDeleteSubSub={deleteSubSubCategory}
+                  onCardOpen={(it)=>setDetailItem(it)}
+                  onCardEdit={(it)=>setDetailItem(it)}
+                  onCardDelete={(it)=>deleteItem(it)}
+                  onToggleFav={toggleFav}
+                  isFavId={isFav}
+                  onNewItem={openNew}
+                  search={search}
+                />
+              ) : (
+                /* 분류 카드 그리드 (랜딩) */
+                <div className="subcat-landing">
+                  {subCategories.length === 0 && !editMode ? (
+                    <div className="empty">
+                      <div className="empty-mark">∅</div>
+                      <div className="empty-title">분류가 없습니다</div>
+                      <div className="empty-text">편집 모드에서 분류를 추가할 수 있습니다.</div>
+                    </div>
+                  ) : (
+                    <div className="subcat-landing-grid">
+                      {subCategories.map((sub, idx) => {
+                        const c = allItems.filter(it => String(it.subId) === String(sub.id)).length;
+                        const subSubCount = (sub.subSubCategories || []).length;
+                        return (
+                          <div
+                            key={sub.id}
+                            className="subcat-card"
+                            onClick={() => setActiveSub(sub.id)}
+                          >
+                            <div className="subcat-card-num">{String(idx + 1).padStart(2, '0')}</div>
+                            {editMode && (
+                              <div className="subcat-card-actions">
+                                <button
+                                  className="subcat-card-action"
+                                  title="이름 변경"
+                                  onClick={(e) => { e.stopPropagation(); renameSubCategory(sub); }}
+                                >✎</button>
+                                <button
+                                  className="subcat-card-action"
+                                  title="삭제"
+                                  onClick={(e) => { e.stopPropagation(); deleteSubCategory(sub); }}
+                                >×</button>
+                              </div>
+                            )}
+                            <div className="subcat-card-title">{sub.name}</div>
+                            {sub.tagline && <div className="subcat-card-meta">{sub.tagline}</div>}
+                            <div className="subcat-card-foot">
+                              <span>자료 {c}건{subSubCount > 0 ? ` · 하위 ${subSubCount}` : ''}</span>
+                              <span className="arrow">→</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {editMode && (
+                        <div className="subcat-add-card" onClick={addSubCategory}>
+                          + 새 분류 추가
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
