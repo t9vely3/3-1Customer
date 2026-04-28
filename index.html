@@ -268,6 +268,27 @@
     }
     .nav-item.active .nav-count { color: var(--amber); opacity: .8; }
 
+    .nav-item.nav-sub {
+      padding-left: 44px;
+      font-size: 13px;
+      color: var(--ink); opacity: 0.85;
+    }
+    .nav-item.nav-sub.active {
+      background: var(--bg-paper);
+      border-left-color: var(--amber);
+      color: var(--amber); opacity: 1;
+    }
+    .nav-item.nav-subsub {
+      padding-left: 60px;
+      font-size: 12px;
+      color: var(--ink); opacity: 0.7;
+    }
+    .nav-item.nav-subsub.active {
+      background: var(--bg-paper);
+      border-left-color: var(--amber);
+      color: var(--amber); opacity: 1; font-weight: 600;
+    }
+
     .sidebar-footer {
       margin-top: auto; padding: 20px 28px;
       border-top: 1px solid var(--line);
@@ -2141,7 +2162,11 @@ function RichEditor({ value, onChange, placeholder }) {
   );
 }
 
-/* ============ SubCategory Page (분류 자체의 노션 페이지 + 자료 그리드) ============ */
+/* ============ SubCategory Page ============
+   Two modes:
+   - Overview (subSub === 'all'): notion body editor only, no item grid
+   - Board (subSub === id): board page with item grid only, no body
+============================================ */
 function SubCategoryPage({
   sectionKey, sub, data, editMode,
   onBack, onSaveSub, onDelete,
@@ -2161,11 +2186,13 @@ function SubCategoryPage({
   const sec = data.sectionData[sectionKey] || {};
   const allItems = sec.items || [];
   const itemsInSub = allItems.filter(it => String(it.subId) === String(sub.id));
+
+  const isOverview = activeSubSub === 'all';
+  const activeBoard = !isOverview ? subSubCategories.find(ss => String(ss.id) === String(activeSubSub)) : null;
+
   const filtered = useMemo(() => {
-    let items = itemsInSub;
-    if (activeSubSub !== 'all') {
-      items = items.filter(it => String(it.subSubId || '') === String(activeSubSub));
-    }
+    if (isOverview) return [];
+    let items = itemsInSub.filter(it => String(it.subSubId || '') === String(activeSubSub));
     if (search && search.trim()) {
       const q = search.trim().toLowerCase();
       items = items.filter(it => {
@@ -2175,7 +2202,7 @@ function SubCategoryPage({
       });
     }
     return items;
-  }, [itemsInSub, activeSubSub, search]);
+  }, [itemsInSub, activeSubSub, search, isOverview]);
 
   function setF(key, val) { setDraft(prev => ({ ...prev, [key]: val })); }
 
@@ -2194,151 +2221,160 @@ function SubCategoryPage({
         <div className="breadcrumb">
           <span className="crumb" onClick={onBack}>{getSectionMeta(sectionKey).name}</span>
           <span className="sep">›</span>
-          <span className="current">{sub.name}</span>
+          {isOverview ? (
+            <span className="current">{sub.name}</span>
+          ) : (
+            <>
+              <span className="crumb" onClick={() => setActiveSubSub('all')}>{sub.name}</span>
+              <span className="sep">›</span>
+              <span className="current">{activeBoard ? activeBoard.name : ''}</span>
+            </>
+          )}
         </div>
         <div className="detail-actions">
-          {editMode && !editing && (
+          {isOverview && editMode && !editing && (
             <button className="detail-btn" onClick={() => setEditing(true)}>분류 편집</button>
           )}
-          {editing && (
+          {isOverview && editing && (
             <>
               <button className="detail-btn" onClick={() => { setDraft(sub); setEditing(false); }}>취소</button>
               <button className="detail-btn amber" onClick={saveDraft}>저장</button>
             </>
           )}
-          {editMode && !editing && (
+          {isOverview && editMode && !editing && (
             <button className="detail-btn danger" onClick={() => onDelete(sub)}>분류 삭제</button>
           )}
-          <button className="detail-btn" onClick={onBack}>← 분류 목록</button>
+          {!isOverview && editMode && (
+            <button className="detail-btn amber" onClick={onNewItem}>+ 새 자료</button>
+          )}
+          {!isOverview && editMode && (
+            <button
+              className="detail-btn"
+              onClick={() => {
+                const action = prompt('1: 이름 변경 / 2: 게시판 삭제', '1');
+                if (action === '1') onRenameSubSub(activeBoard);
+                else if (action === '2') onDeleteSubSub(activeBoard);
+              }}
+            >게시판</button>
+          )}
         </div>
       </div>
 
-      <div className="subcat-page-cover"></div>
-
       <div className="subcat-page-body">
-        <div className="detail-eyebrow">{getSectionMeta(sectionKey).name}</div>
+        {isOverview ? (
+          /* === OVERVIEW MODE: notion body only === */
+          <>
+            <div className="detail-eyebrow">{getSectionMeta(sectionKey).name}</div>
 
-        {editing ? (
-          <input
-            className="detail-title-input"
-            value={draft.name || ''}
-            onChange={e => setF('name', e.target.value)}
-            placeholder="분류 이름"
-          />
-        ) : (
-          <h1 className="detail-title">{sub.name}</h1>
-        )}
-
-        {/* Properties (간단한 메타) */}
-        {(editing || sub.tagline) && (
-          <div className="props">
-            <div className="props-row">
-              <div className="props-label">한 줄 소개</div>
-              <div className="props-value">
-                {editing ? (
-                  <input
-                    type="text"
-                    value={draft.tagline || ''}
-                    onChange={e => setF('tagline', e.target.value)}
-                    placeholder="예: 출판물 · 잡지 · 브랜딩"
-                  />
-                ) : (sub.tagline || '')}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Notion-style body */}
-        <div className="body-section">
-          <div className="body-label">— 분류 소개</div>
-          {editing ? (
-            <RichEditor
-              value={draft.body || ''}
-              onChange={(html) => setF('body', html)}
-              placeholder="이 분류에 대한 설명을 자유롭게 작성하세요. 헤딩 · 목록 · 강조 인용 등을 사용할 수 있습니다."
-            />
-          ) : (
-            sub.body
-              ? <div className="body-readonly" dangerouslySetInnerHTML={{ __html: sub.body }} />
-              : null
-          )}
-        </div>
-
-        {/* 자료 영역: 3단계 사이드바 + 카드 그리드 */}
-        <div style={{marginTop: 36}}>
-          <div className="body-label" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-            <span>— 자료 ({filtered.length})</span>
-            {editMode && (
-              <button className="detail-btn amber" onClick={onNewItem}>+ 새 자료</button>
+            {editing ? (
+              <input
+                className="detail-title-input"
+                value={draft.name || ''}
+                onChange={e => setF('name', e.target.value)}
+                placeholder="분류 이름"
+              />
+            ) : (
+              <h1 className="detail-title">{sub.name}</h1>
             )}
-          </div>
 
-          <div className="section-with-tier" style={{marginTop: 14}}>
-            <aside className="tier-side">
-              <div className="tier-side-label">하위 분류</div>
-              <div className="tier-side-list">
-                <button
-                  className={'tier-side-item ' + (activeSubSub === 'all' ? 'active' : '')}
-                  onClick={() => setActiveSubSub('all')}
-                >
-                  <span>전체</span>
-                  <span className="num">{itemsInSub.length}</span>
-                </button>
-                {subSubCategories.map(ss => {
-                  const c = itemsInSub.filter(it => String(it.subSubId || '') === String(ss.id)).length;
-                  return (
-                    <button
-                      key={ss.id}
-                      className={'tier-side-item ' + (String(activeSubSub) === String(ss.id) ? 'active' : '')}
-                      onClick={() => setActiveSubSub(ss.id)}
-                      onContextMenu={(e) => {
-                        if (!editMode) return;
-                        e.preventDefault();
-                        const action = prompt('1: 이름 변경 / 2: 삭제', '1');
-                        if (action === '1') onRenameSubSub(ss);
-                        else if (action === '2') onDeleteSubSub(ss);
-                      }}
-                    >
-                      <span>{ss.name}</span>
-                      <span className="num">{c}</span>
-                    </button>
-                  );
-                })}
-                {editMode && (
-                  <button className="tier-side-add" onClick={onAddSubSub}>+ 하위 분류</button>
-                )}
-              </div>
-            </aside>
-
-            <div>
-              {filtered.length === 0 ? (
-                <div className="empty">
-                  <div className="empty-mark">∅</div>
-                  <div className="empty-title">자료가 없습니다</div>
-                  <div className="empty-text">
-                    {editMode ? '+ 새 자료 버튼으로 등록하세요.' : '편집 모드에서 자료를 등록할 수 있습니다.'}
+            {(editing || sub.tagline) && (
+              <div className="props">
+                <div className="props-row">
+                  <div className="props-label">한 줄 소개</div>
+                  <div className="props-value">
+                    {editing ? (
+                      <input
+                        type="text"
+                        value={draft.tagline || ''}
+                        onChange={e => setF('tagline', e.target.value)}
+                        placeholder="예: 출판물 · 잡지 · 브랜딩"
+                      />
+                    ) : (sub.tagline || '')}
                   </div>
                 </div>
+              </div>
+            )}
+
+            <div className="body-section" style={{marginTop: 8}}>
+              {editing ? (
+                <RichEditor
+                  value={draft.body || ''}
+                  onChange={(html) => setF('body', html)}
+                  placeholder="이 분류 소개를 자유롭게 작성하세요. 좌측 사이드바에서 사진/영상/링크 게시판을 추가할 수 있습니다."
+                />
+              ) : sub.body ? (
+                <div className="body-readonly" dangerouslySetInnerHTML={{ __html: sub.body }} />
               ) : (
-                <div className="grid">
-                  {filtered.map(item => (
-                    <Card
-                      key={item.id}
-                      item={item}
-                      sectionKey={sectionKey}
-                      onOpen={(it)=>onCardOpen({...it, _section: sectionKey})}
-                      onToggleFav={onToggleFav}
-                      isFav={isFavId(item.id)}
-                      onEdit={(it)=>onCardEdit({...it, _section: sectionKey})}
-                      onDelete={(it)=>onCardDelete({...it, _section: sectionKey})}
-                      editMode={editMode}
-                    />
-                  ))}
+                <div className="empty" style={{padding: '40px 20px', textAlign: 'left'}}>
+                  <div className="empty-text" style={{textAlign: 'left', maxWidth: 'none'}}>
+                    {editMode
+                      ? '"분류 편집" 버튼을 눌러 분류 소개를 작성하세요. 좌측 사이드바의 "+ 게시판"으로 사진/영상/링크 등 게시판을 만들 수 있습니다.'
+                      : '아직 분류 소개가 작성되지 않았습니다.'}
+                  </div>
                 </div>
               )}
             </div>
-          </div>
-        </div>
+
+            {/* 게시판 만들기 버튼 (편집 모드, overview에서만) */}
+            {editMode && subSubCategories.length === 0 && (
+              <div style={{marginTop: 32, padding: 20, border: '1px dashed var(--line-strong)', textAlign: 'center', color: 'var(--muted)'}}>
+                아직 게시판이 없습니다.
+                <button
+                  className="detail-btn"
+                  style={{marginLeft: 12}}
+                  onClick={onAddSubSub}
+                >+ 게시판 추가 (사진/영상/링크 등)</button>
+              </div>
+            )}
+            {editMode && subSubCategories.length > 0 && (
+              <div style={{marginTop: 32, fontSize: 12, color: 'var(--muted)'}}>
+                게시판 {subSubCategories.length}개 — 좌측 사이드바에서 클릭하여 진입하세요.
+                <button
+                  className="detail-btn"
+                  style={{marginLeft: 12, padding: '4px 10px', fontSize: 10}}
+                  onClick={onAddSubSub}
+                >+ 게시판</button>
+              </div>
+            )}
+          </>
+        ) : (
+          /* === BOARD MODE: item grid only === */
+          <>
+            <div className="detail-eyebrow">{sub.name}</div>
+            <h1 className="detail-title" style={{marginBottom: 18}}>
+              {activeBoard ? activeBoard.name : '게시판'}
+            </h1>
+            <div style={{fontSize: 13, color: 'var(--muted)', marginBottom: 24}}>
+              {filtered.length}건
+            </div>
+
+            {filtered.length === 0 ? (
+              <div className="empty">
+                <div className="empty-mark">∅</div>
+                <div className="empty-title">자료가 없습니다</div>
+                <div className="empty-text">
+                  {editMode ? '+ 새 자료 버튼으로 등록하세요.' : '편집 모드에서 자료를 등록할 수 있습니다.'}
+                </div>
+              </div>
+            ) : (
+              <div className="grid">
+                {filtered.map(item => (
+                  <Card
+                    key={item.id}
+                    item={item}
+                    sectionKey={sectionKey}
+                    onOpen={(it)=>onCardOpen({...it, _section: sectionKey})}
+                    onToggleFav={onToggleFav}
+                    isFav={isFavId(item.id)}
+                    onEdit={(it)=>onCardEdit({...it, _section: sectionKey})}
+                    onDelete={(it)=>onCardDelete({...it, _section: sectionKey})}
+                    editMode={editMode}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -3175,14 +3211,45 @@ function App() {
 
           <div className="nav-label">Sections</div>
           <ul className="nav-list">
-            {SECTIONS.filter(s => !s.special).map(s => (
-              <li key={s.key}
-                  className={'nav-item ' + (activeSection === s.key ? 'active' : '')}
-                  onClick={()=>selectSection(s.key)}>
-                <span className="nav-name">{s.name}</span>
-                <span className="nav-count">{sectionCounts[s.key] || 0}</span>
-              </li>
-            ))}
+            {SECTIONS.filter(s => !s.special).map(s => {
+              const isActiveSection = activeSection === s.key;
+              const sec = data.sectionData[s.key] || {};
+              const subs = sec.subCategories || [];
+              return (
+                <React.Fragment key={s.key}>
+                  <li className={'nav-item ' + (isActiveSection ? 'active' : '')}
+                      onClick={()=>selectSection(s.key)}>
+                    <span className="nav-name">
+                      {isActiveSection && subs.length > 0 ? '▾ ' : '▸ '}
+                      {s.name}
+                    </span>
+                    <span className="nav-count">{sectionCounts[s.key] || 0}</span>
+                  </li>
+                  {isActiveSection && subs.map(sub => {
+                    const isActiveSub = String(activeSub) === String(sub.id);
+                    const subSubs = sub.subSubCategories || [];
+                    return (
+                      <React.Fragment key={sub.id}>
+                        <li className={'nav-item nav-sub ' + (isActiveSub && activeSubSub === 'all' ? 'active' : '')}
+                            onClick={()=>{ setActiveSub(sub.id); setActiveSubSub('all'); setSidebarOpen(false); }}>
+                          <span className="nav-name">
+                            {isActiveSub && subSubs.length > 0 ? '▾ ' : ''}
+                            {sub.name}
+                          </span>
+                        </li>
+                        {isActiveSub && subSubs.map(ss => (
+                          <li key={ss.id}
+                              className={'nav-item nav-subsub ' + (String(activeSubSub) === String(ss.id) ? 'active' : '')}
+                              onClick={()=>{ setActiveSubSub(ss.id); setSidebarOpen(false); }}>
+                            <span className="nav-name">{ss.name}</span>
+                          </li>
+                        ))}
+                      </React.Fragment>
+                    );
+                  })}
+                </React.Fragment>
+              );
+            })}
           </ul>
 
           <div className="nav-label">Pinned</div>
