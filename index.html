@@ -393,11 +393,11 @@
     .subcat-add:hover { color: var(--ink); border-color: var(--ink); }
 
     /* ============ Card Grid ============ */
-    .grid-wrap { padding: 32px 56px 80px; }
+    .grid-wrap { padding: 28px 40px 80px; }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
     }
     .card {
       background: var(--paper);
@@ -445,6 +445,20 @@
     .card-fav:hover { background: var(--paper); }
     .card-fav svg { width: 16px; height: 16px; fill: none; stroke: var(--ink); stroke-width: 1.5; }
     .card-fav.active svg { fill: var(--amber); stroke: var(--amber); }
+
+    .card-play-badge {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px; height: 44px;
+      background: rgba(14,21,37,0.78);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      backdrop-filter: blur(2px);
+    }
+    .card-play-badge svg { margin-left: 2px; }
+    .card:hover .card-play-badge { background: var(--amber); }
 
     .card-body {
       padding: 14px 16px;
@@ -1063,9 +1077,29 @@
     }
 
     .detail-body {
-      max-width: 760px;
+      max-width: 920px;
       margin: 0 auto;
-      padding: 36px 36px 80px;
+      padding: 24px 36px 60px;
+    }
+    .inline-video {
+      margin: 20px 0 24px;
+      background: #000;
+      aspect-ratio: 16 / 9;
+      max-height: 540px;
+    }
+    .inline-video iframe, .inline-video video {
+      width: 100%; height: 100%;
+      border: none; display: block;
+    }
+    .inline-images {
+      margin: 20px 0 24px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .inline-images img {
+      width: 100%; max-width: 100%;
+      max-height: 720px;
+      object-fit: contain;
+      background: var(--bg-paper);
     }
     .detail-eyebrow {
       font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
@@ -1483,58 +1517,39 @@ const SECTIONS = [
 
 const SECTION_FIELDS = {
   curriculum: [
-    { key: 'title', label: '과정명', type: 'text', required: true, isTitle: true },
-    { key: 'desc', label: '설명', type: 'textarea' },
-    { key: 'duration', label: '교육 기간', type: 'text', placeholder: '예: 3개월' },
-    { key: 'fee', label: '수강료', type: 'text', placeholder: '예: 월 50만원' },
-    { key: 'capacity', label: '정원', type: 'text', placeholder: '예: 20명' },
-    { key: 'schedule', label: '시간표', type: 'text', placeholder: '월/수/금 14:00' },
-    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube 등' }
+    { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
+    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
+    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
   ],
   portfolio: [
     { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
-    { key: 'desc', label: '설명', type: 'textarea' },
-    { key: 'author', label: '제작자', type: 'text' },
-    { key: 'videoUrl', label: '영상 링크', type: 'text' },
-    { key: 'url', label: '외부 링크', type: 'text' }
+    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
+    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
   ],
   links: [
     { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
-    { key: 'desc', label: '설명', type: 'textarea' },
-    { key: 'url', label: 'URL', type: 'text', required: true },
-    { key: 'linkType', label: '유형', type: 'select', options: ['참고자료','도구','커뮤니티','채용','기타'] }
+    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
+    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
   ],
   seminar: [
-    { key: 'title', label: '세미나명', type: 'text', required: true, isTitle: true },
-    { key: 'desc', label: '설명', type: 'textarea' },
-    { key: 'eventDate', label: '날짜', type: 'text', placeholder: '2026.05.15' },
-    { key: 'eventTime', label: '시간', type: 'text', placeholder: '14:00~16:00' },
-    { key: 'location', label: '장소', type: 'text' },
-    { key: 'speaker', label: '강사', type: 'text' },
-    { key: 'capacity', label: '정원', type: 'text' },
-    { key: 'fee', label: '참가비', type: 'text' },
-    { key: 'videoUrl', label: '영상 링크', type: 'text' }
+    { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
+    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
+    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
   ],
   trend: [
     { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
-    { key: 'desc', label: '내용', type: 'textarea' },
-    { key: 'source', label: '출처', type: 'text' },
-    { key: 'url', label: '원문 링크', type: 'text' }
+    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
+    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
   ],
   promo: [
-    { key: 'title', label: '프로모션명', type: 'text', required: true, isTitle: true },
-    { key: 'desc', label: '설명', type: 'textarea' },
-    { key: 'startDate', label: '시작일', type: 'date' },
-    { key: 'endDate', label: '종료일', type: 'date' },
-    { key: 'discount', label: '할인/혜택', type: 'text' }
+    { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
+    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
+    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
   ],
   mentor: [
-    { key: 'title', label: '이름', type: 'text', required: true, isTitle: true },
-    { key: 'desc', label: '소개', type: 'textarea' },
-    { key: 'specialty', label: '전문 분야', type: 'text' },
-    { key: 'career', label: '주요 경력', type: 'textarea' },
-    { key: 'contact', label: '연락처/SNS', type: 'text' },
-    { key: 'videoUrl', label: '소개 영상', type: 'text' }
+    { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
+    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
+    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
   ]
 };
 
@@ -1705,6 +1720,7 @@ function PdfPreview({ url }) {
 /* Card */
 function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, editMode, subCatName }) {
   const thumb = pickThumb(item);
+  const hasVideo = !!item.videoUrl || (item.files || []).some(f => isVideoFile(f.name));
   return (
     <div className="card" onClick={() => onOpen(item)}>
       <div className="card-thumb">
@@ -1712,6 +1728,13 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, 
           <img src={thumb} alt="" loading="lazy" />
         ) : (
           <span className="card-thumb-placeholder">{(item.title || '?').slice(0,1).toUpperCase()}</span>
+        )}
+        {hasVideo && (
+          <div className="card-play-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
         )}
         <button
           className={'card-fav ' + (isFav ? 'active' : '')}
@@ -2485,8 +2508,6 @@ function Detail({ item, sectionKey, data, onClose, onSave, onDelete, onToggleFav
         </div>
       </div>
 
-      <div className="detail-cover"></div>
-
       <div className="detail-body">
         <div className="detail-eyebrow">
           {sectionMeta.name}{sub ? ' · ' + sub.name : ''}{subSub ? ' · ' + subSub.name : ''}
@@ -2503,140 +2524,179 @@ function Detail({ item, sectionKey, data, onClose, onSave, onDelete, onToggleFav
           <h1 className="detail-title">{item[titleField.key] || '제목 없음'}</h1>
         )}
 
-        {/* Properties */}
-        <div className="props">
-          {fields.filter(f => !f.isTitle && f.key !== 'desc').map(f => {
-            const v = editing ? draft[f.key] : item[f.key];
-            if (!editing && !v) return null;
-            return (
-              <div className="props-row" key={f.key}>
-                <div className="props-label">{f.label}{f.required && editing ? ' *' : ''}</div>
-                <div className="props-value">
-                  {editing ? (
-                    f.type === 'textarea' ? (
-                      <textarea value={v || ''} onChange={e => setF(f.key, e.target.value)} placeholder={f.placeholder || ''} />
-                    ) : f.type === 'select' ? (
-                      <select value={v || ''} onChange={e => setF(f.key, e.target.value)}>
-                        <option value="">선택</option>
-                        {(f.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                      </select>
-                    ) : (
-                      <input
-                        type={f.type === 'date' ? 'date' : 'text'}
-                        value={v || ''}
-                        onChange={e => setF(f.key, e.target.value)}
-                        placeholder={f.placeholder || ''}
-                      />
-                    )
-                  ) : (
-                    f.key.toLowerCase().includes('url') && v ? (
-                      <a href={v} target="_blank" rel="noopener noreferrer">{v}</a>
-                    ) : v
-                  )}
-                </div>
-              </div>
-            );
-          })}
-          {/* Description short */}
-          {(editing || item.desc) && (
-            <div className="props-row">
-              <div className="props-label">한줄 설명</div>
-              <div className="props-value">
-                {editing ? (
-                  <textarea value={draft.desc || ''} onChange={e => setF('desc', e.target.value)} placeholder="짧은 설명" />
-                ) : item.desc}
-              </div>
+        {/* Properties — 편집 모드면 모두, 보기 모드면 값 있을 때만 */}
+        {(() => {
+          const visibleFields = fields.filter(f => !f.isTitle);
+          const hasAnyValue = visibleFields.some(f => item[f.key]);
+          if (!editing && !hasAnyValue) return null;
+          return (
+            <div className="props">
+              {visibleFields.map(f => {
+                const v = editing ? draft[f.key] : item[f.key];
+                if (!editing && !v) return null;
+                return (
+                  <div className="props-row" key={f.key}>
+                    <div className="props-label">{f.label}{f.required && editing ? ' *' : ''}</div>
+                    <div className="props-value">
+                      {editing ? (
+                        f.type === 'textarea' ? (
+                          <textarea value={v || ''} onChange={e => setF(f.key, e.target.value)} placeholder={f.placeholder || ''} />
+                        ) : (
+                          <input
+                            type="text"
+                            value={v || ''}
+                            onChange={e => setF(f.key, e.target.value)}
+                            placeholder={f.placeholder || ''}
+                          />
+                        )
+                      ) : (
+                        f.key.toLowerCase().includes('url') && v ? (
+                          <a href={v} target="_blank" rel="noopener noreferrer">{v}</a>
+                        ) : v
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </div>
+          );
+        })()}
 
-        {/* Body content */}
-        <div className="body-section">
-          <div className="body-label">— 본문 내용</div>
-          {editing ? (
-            <RichEditor
-              value={draft.body || ''}
-              onChange={(html) => setF('body', html)}
-              placeholder="자유롭게 작성하세요. 헤딩·목록·강조·링크 등을 사용할 수 있습니다."
-            />
-          ) : (
-            item.body
-              ? <div className="body-readonly" dangerouslySetInnerHTML={{ __html: item.body }} />
-              : null
-          )}
-        </div>
-
-        {/* Files */}
-        {(editing || files.length > 0) && (
-          <div className="detail-media">
-            <div className="body-label">— 첨부 파일 ({files.length})</div>
-            {editing && (
-              <div style={{marginBottom: 12}}>
-                <button
-                  className="detail-btn"
-                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                  disabled={uploading}
-                >{uploading ? '업로드 중…' : '+ 파일 추가'}</button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  style={{display: 'none'}}
-                  onChange={e => uploadFiles(e.target.files)}
+        {/* Inline video embed (보기 모드, videoUrl 있을 때) */}
+        {!editing && item.videoUrl && (() => {
+          const ytId = getYouTubeId(item.videoUrl);
+          if (ytId) {
+            return (
+              <div className="inline-video">
+                <iframe
+                  src={`https://www.youtube.com/embed/${ytId}?rel=0`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={item[titleField.key] || ''}
                 />
               </div>
-            )}
-            {files.length > 0 && (
-              <div className="detail-media-grid">
-                {files.map(f => {
-                  const isImg = isImageFile(f.name);
-                  const isVid = isVideoFile(f.name);
-                  const isPdf = isPdfFile(f.name);
-                  function handleClick() {
-                    if (isImg || isVid) {
-                      onPreviewMedia(f);
-                    } else if (f.directUrl) {
-                      // PDF and others: open in new tab
-                      window.open(f.directUrl, '_blank', 'noopener,noreferrer');
-                    }
-                  }
-                  return (
-                    <div key={f.id} className="detail-media-item">
-                      <div className="detail-media-thumb" onClick={handleClick}>
-                        {isImg && f.directUrl
-                          ? <img src={f.directUrl} alt="" />
-                          : isVid ? '🎬'
-                          : isPdf ? '📄'
-                          : '📎'}
-                      </div>
-                      <div className="detail-media-info">
-                        <div className="type">
-                          {isImg ? '이미지' : isVid ? '영상' : isPdf ? 'PDF' : '파일'}
-                        </div>
-                        <div className="name" title={f.name}>{f.name}</div>
-                        {(isPdf || (!isImg && !isVid)) && f.directUrl && (
-                          <a
-                            href={f.directUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            style={{display:'inline-block', marginTop:4, fontSize:10, color:'var(--amber)', textDecoration:'none', borderBottom:'1px solid rgba(184,132,45,0.3)'}}
-                          >새 창에서 열기 →</a>
-                        )}
-                        {editing && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); removeFile(f.id); }}
-                            style={{marginTop:4, marginLeft:8, fontSize:10, background:'transparent', border:'none', color:'var(--rose)', cursor:'pointer', padding: 0}}
-                          >삭제</button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+            );
+          }
+          if (/\.(mp4|webm|mov)/i.test(item.videoUrl)) {
+            return (
+              <div className="inline-video">
+                <video src={item.videoUrl} controls />
               </div>
+            );
+          }
+          return null;
+        })()}
+
+        {/* Inline image (보기 모드, 첨부에 이미지가 있을 때 큰 미리보기) */}
+        {!editing && (() => {
+          const imgs = (item.files || []).filter(f => isImageFile(f.name) && f.directUrl);
+          if (imgs.length === 0) return null;
+          return (
+            <div className="inline-images">
+              {imgs.map(f => (
+                <img
+                  key={f.id}
+                  src={f.directUrl}
+                  alt={f.name}
+                  onClick={() => onPreviewMedia(f)}
+                  style={{cursor: 'zoom-in'}}
+                />
+              ))}
+            </div>
+          );
+        })()}
+
+        {/* Body content — 편집 모드거나 본문 있을 때만 */}
+        {(editing || item.body) && (
+          <div className="body-section">
+            <div className="body-label">— 본문 내용</div>
+            {editing ? (
+              <RichEditor
+                value={draft.body || ''}
+                onChange={(html) => setF('body', html)}
+                placeholder="자유롭게 작성하세요. 헤딩·목록·강조·링크 등을 사용할 수 있습니다."
+              />
+            ) : (
+              <div className="body-readonly" dangerouslySetInnerHTML={{ __html: item.body }} />
             )}
           </div>
         )}
+
+        {/* Files — 편집 모드거나 파일 있을 때만. 이미지가 위에 인라인이면 비-이미지 파일만 표시 */}
+        {(() => {
+          const allFiles = files;
+          const nonImg = editing ? allFiles : allFiles.filter(f => !isImageFile(f.name));
+          if (!editing && nonImg.length === 0) return null;
+          return (
+            <div className="detail-media">
+              <div className="body-label">— {editing ? `첨부 파일 (${allFiles.length})` : `파일 (${nonImg.length})`}</div>
+              {editing && (
+                <div style={{marginBottom: 12}}>
+                  <button
+                    className="detail-btn"
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                    disabled={uploading}
+                  >{uploading ? '업로드 중…' : '+ 파일 추가'}</button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    style={{display: 'none'}}
+                    onChange={e => uploadFiles(e.target.files)}
+                  />
+                </div>
+              )}
+              {(editing ? allFiles : nonImg).length > 0 && (
+                <div className="detail-media-grid">
+                  {(editing ? allFiles : nonImg).map(f => {
+                    const isImg = isImageFile(f.name);
+                    const isVid = isVideoFile(f.name);
+                    const isPdf = isPdfFile(f.name);
+                    function handleClick() {
+                      if (isImg || isVid) {
+                        onPreviewMedia(f);
+                      } else if (f.directUrl) {
+                        window.open(f.directUrl, '_blank', 'noopener,noreferrer');
+                      }
+                    }
+                    return (
+                      <div key={f.id} className="detail-media-item">
+                        <div className="detail-media-thumb" onClick={handleClick}>
+                          {isImg && f.directUrl
+                            ? <img src={f.directUrl} alt="" />
+                            : isVid ? '🎬'
+                            : isPdf ? '📄'
+                            : '📎'}
+                        </div>
+                        <div className="detail-media-info">
+                          <div className="type">
+                            {isImg ? '이미지' : isVid ? '영상' : isPdf ? 'PDF' : '파일'}
+                          </div>
+                          <div className="name" title={f.name}>{f.name}</div>
+                          {(isPdf || (!isImg && !isVid)) && f.directUrl && (
+                            <a
+                              href={f.directUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              style={{display:'inline-block', marginTop:4, fontSize:10, color:'var(--amber)', textDecoration:'none', borderBottom:'1px solid rgba(184,132,45,0.3)'}}
+                            >새 창에서 열기 →</a>
+                          )}
+                          {editing && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); removeFile(f.id); }}
+                              style={{marginTop:4, marginLeft:8, fontSize:10, background:'transparent', border:'none', color:'var(--rose)', cursor:'pointer', padding: 0}}
+                            >삭제</button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
@@ -2953,7 +3013,24 @@ function App() {
   function selectSection(key) {
     setActiveSection(key);
     setSidebarOpen(false);
-    // Scroll to top on section change
+    setDetailItem(null);
+    setActiveSub('all');
+    setActiveSubSub('all');
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+  }
+
+  function navigateToSub(subId) {
+    setActiveSub(subId);
+    setActiveSubSub('all');
+    setDetailItem(null);
+    setSidebarOpen(false);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+  }
+
+  function navigateToSubSub(subSubId) {
+    setActiveSubSub(subSubId);
+    setDetailItem(null);
+    setSidebarOpen(false);
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
   }
 
@@ -3231,7 +3308,7 @@ function App() {
                     return (
                       <React.Fragment key={sub.id}>
                         <li className={'nav-item nav-sub ' + (isActiveSub && activeSubSub === 'all' ? 'active' : '')}
-                            onClick={()=>{ setActiveSub(sub.id); setActiveSubSub('all'); setSidebarOpen(false); }}>
+                            onClick={()=>navigateToSub(sub.id)}>
                           <span className="nav-name">
                             {isActiveSub && subSubs.length > 0 ? '▾ ' : ''}
                             {sub.name}
@@ -3240,7 +3317,7 @@ function App() {
                         {isActiveSub && subSubs.map(ss => (
                           <li key={ss.id}
                               className={'nav-item nav-subsub ' + (String(activeSubSub) === String(ss.id) ? 'active' : '')}
-                              onClick={()=>{ setActiveSubSub(ss.id); setSidebarOpen(false); }}>
+                              onClick={()=>navigateToSubSub(ss.id)}>
                             <span className="nav-name">{ss.name}</span>
                           </li>
                         ))}
@@ -3364,7 +3441,7 @@ function App() {
                   sub={activeSubObj}
                   data={data}
                   editMode={editMode}
-                  onBack={() => setActiveSub('all')}
+                  onBack={() => navigateToSub('all')}
                   onSaveSub={saveSubCategory}
                   onDelete={deleteSubCategory}
                   activeSubSub={activeSubSub}
@@ -3399,7 +3476,7 @@ function App() {
                           <div
                             key={sub.id}
                             className="subcat-card"
-                            onClick={() => setActiveSub(sub.id)}
+                            onClick={() => navigateToSub(sub.id)}
                           >
                             <div className="subcat-card-num">{String(idx + 1).padStart(2, '0')}</div>
                             {editMode && (
