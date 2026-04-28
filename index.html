@@ -8,7 +8,6 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
   <!-- React -->
@@ -69,7 +68,7 @@
       --text: var(--ink);
       --muted-light: var(--muted-2);
 
-      --serif: 'Cormorant Garamond', 'Noto Serif KR', serif;
+      --serif: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
@@ -313,10 +312,10 @@
     }
     .header-title {
       font-family: var(--serif);
-      font-size: 44px; font-weight: 500; line-height: 1;
-      color: var(--ink); letter-spacing: -.005em;
+      font-size: 38px; font-weight: 700; line-height: 1.1;
+      color: var(--ink-strong); letter-spacing: -.02em;
     }
-    .header-title em { font-style: italic; }
+    .header-title em { font-style: normal; color: var(--amber); }
     .header-meta {
       font-size: 13px; color: var(--muted); margin-top: 14px;
       display: flex; gap: 16px; align-items: center;
@@ -437,9 +436,9 @@
     }
     .card-title {
       font-family: var(--serif);
-      font-size: 20px; font-weight: 500; line-height: 1.25;
-      color: var(--ink); margin-bottom: 8px;
-      letter-spacing: -.005em;
+      font-size: 17px; font-weight: 700; line-height: 1.35;
+      color: var(--ink-strong); margin-bottom: 8px;
+      letter-spacing: -.01em;
     }
     .card-desc {
       font-size: 13px; color: var(--muted); line-height: 1.55;
@@ -740,12 +739,12 @@
     }
     .home-title {
       font-family: var(--serif);
-      font-size: 72px; font-weight: 500; line-height: 1.05;
-      letter-spacing: -.015em;
+      font-size: 64px; font-weight: 700; line-height: 1.1;
+      letter-spacing: -.02em;
       color: var(--ink-strong);
       margin-bottom: 28px;
     }
-    .home-title em { font-style: italic; color: var(--amber); }
+    .home-title em { font-style: normal; color: var(--amber); }
     .home-tagline {
       font-size: 16px; color: var(--ink); line-height: 1.7;
       max-width: 520px;
@@ -888,6 +887,323 @@
     @media (max-width: 480px) {
       .home-grid { grid-template-columns: 1fr; }
       .home-title { font-size: 32px; }
+    }
+
+    /* ============ Detail Page (Notion-style) ============ */
+    .detail {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .detail-topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 32px;
+      border-bottom: 1px solid var(--line-soft);
+      font-size: 12px; color: var(--muted);
+      position: sticky; top: 0; background: var(--bg);
+      z-index: 100;
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 6px;
+      flex-wrap: wrap;
+    }
+    .breadcrumb a, .breadcrumb span.crumb {
+      color: var(--muted); cursor: pointer; font-size: 12px;
+      background: none; border: none; font-family: inherit;
+      padding: 0;
+    }
+    .breadcrumb a:hover, .breadcrumb span.crumb:hover { color: var(--ink); }
+    .breadcrumb .sep { color: var(--amber); font-weight: 500; }
+    .breadcrumb .current { color: var(--ink-strong); font-weight: 600; }
+
+    .detail-actions { display: flex; gap: 6px; }
+    .detail-btn {
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid var(--line-strong);
+      color: var(--ink);
+      font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+      font-weight: 500;
+      transition: all .15s;
+      font-family: inherit;
+    }
+    .detail-btn:hover { background: var(--ink-strong); color: var(--bg); border-color: var(--ink-strong); }
+    .detail-btn.amber { background: var(--amber); color: #fff; border-color: var(--amber); }
+    .detail-btn.amber:hover { background: #9C7022; border-color: #9C7022; }
+    .detail-btn.fav.active { background: var(--amber); color: #fff; border-color: var(--amber); }
+    .detail-btn.danger:hover { background: var(--rose); border-color: var(--rose); }
+
+    .detail-cover {
+      height: 140px;
+      background: linear-gradient(135deg, rgba(184,132,45,0.15), rgba(14,21,37,0.06));
+    }
+
+    .detail-body {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 36px 36px 80px;
+    }
+    .detail-eyebrow {
+      font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+      color: var(--amber); font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .detail-title {
+      font-size: 36px; font-weight: 700; line-height: 1.15;
+      color: var(--ink-strong); letter-spacing: -.02em;
+      margin-bottom: 28px;
+    }
+    .detail-title-input {
+      width: 100%;
+      font-size: 36px; font-weight: 700; line-height: 1.15;
+      color: var(--ink-strong); letter-spacing: -.02em;
+      background: transparent;
+      border: 1px dashed rgba(184,132,45,0.4);
+      padding: 4px 8px;
+      outline: none;
+      font-family: inherit;
+    }
+    .detail-title-input:focus { border-style: solid; border-color: var(--amber); }
+
+    /* Property table */
+    .props {
+      background: var(--bg-paper);
+      border: 1px solid var(--line);
+      padding: 4px 18px;
+      margin-bottom: 32px;
+    }
+    .props-row {
+      display: grid; grid-template-columns: 130px 1fr;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line-soft);
+      font-size: 13px;
+      align-items: start;
+    }
+    .props-row:last-child { border-bottom: none; }
+    .props-label {
+      color: var(--muted); font-weight: 500;
+      font-size: 12px;
+    }
+    .props-value { color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+    .props-value a { color: var(--amber); text-decoration: none; border-bottom: 1px solid rgba(184,132,45,0.3); }
+    .props-value input, .props-value textarea, .props-value select {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--line);
+      padding: 6px 8px;
+      font-size: 13px;
+      color: var(--ink);
+      font-family: inherit;
+      outline: none;
+    }
+    .props-value input:focus, .props-value textarea:focus, .props-value select:focus {
+      border-color: var(--ink-strong);
+    }
+    .props-value textarea { min-height: 60px; resize: vertical; }
+
+    /* Body editor */
+    .body-section { margin-top: 28px; }
+    .body-label {
+      font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+      color: var(--muted); font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .editor-toolbar {
+      display: flex; gap: 4px; flex-wrap: wrap;
+      padding: 8px;
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      border-bottom: none;
+      position: sticky; top: 50px; z-index: 50;
+    }
+    .toolbar-btn {
+      padding: 5px 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 500;
+      transition: background .12s, border-color .12s;
+      min-width: 30px;
+      font-family: inherit;
+    }
+    .toolbar-btn:hover { background: var(--bg-paper); border-color: var(--line); }
+    .toolbar-btn.h1 { font-weight: 700; }
+    .toolbar-sep {
+      width: 1px; background: var(--line); margin: 4px 4px;
+    }
+
+    .editor {
+      background: var(--bg-paper);
+      border: 1px solid var(--line);
+      padding: 24px 28px;
+      min-height: 320px;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--ink);
+      outline: none;
+    }
+    .editor:focus { border-color: var(--ink-strong); }
+    .editor[contenteditable="true"]:empty::before {
+      content: attr(data-placeholder);
+      color: var(--muted-2);
+      pointer-events: none;
+      display: block;
+    }
+    .editor h1 { font-size: 26px; font-weight: 700; margin: 18px 0 10px; line-height: 1.2; color: var(--ink-strong); }
+    .editor h2 { font-size: 20px; font-weight: 700; margin: 16px 0 8px; line-height: 1.3; color: var(--ink-strong); }
+    .editor h3 { font-size: 16px; font-weight: 700; margin: 14px 0 6px; color: var(--ink-strong); }
+    .editor p { margin: 0 0 10px; }
+    .editor ul, .editor ol { padding-left: 24px; margin: 0 0 12px; }
+    .editor li { margin-bottom: 4px; }
+    .editor blockquote {
+      margin: 14px 0;
+      padding: 12px 18px;
+      border-left: 3px solid var(--amber);
+      background: var(--amber-bg);
+      color: var(--ink);
+      font-size: 14px;
+    }
+    .editor a { color: var(--amber); border-bottom: 1px solid rgba(184,132,45,0.3); text-decoration: none; }
+    .editor strong { font-weight: 700; color: var(--ink-strong); }
+    .editor em { font-style: italic; }
+    .editor img { max-width: 100%; height: auto; margin: 8px 0; }
+
+    .body-readonly {
+      background: var(--bg-paper);
+      border: 1px solid var(--line);
+      padding: 28px 32px;
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--ink);
+      min-height: 80px;
+    }
+    .body-readonly h1 { font-size: 26px; font-weight: 700; margin: 22px 0 12px; line-height: 1.2; color: var(--ink-strong); }
+    .body-readonly h1:first-child { margin-top: 0; }
+    .body-readonly h2 { font-size: 20px; font-weight: 700; margin: 20px 0 10px; line-height: 1.3; color: var(--ink-strong); }
+    .body-readonly h3 { font-size: 16px; font-weight: 700; margin: 16px 0 6px; color: var(--ink-strong); }
+    .body-readonly p { margin: 0 0 12px; }
+    .body-readonly ul, .body-readonly ol { padding-left: 24px; margin: 0 0 14px; }
+    .body-readonly li { margin-bottom: 5px; }
+    .body-readonly blockquote {
+      margin: 16px 0;
+      padding: 14px 18px;
+      border-left: 3px solid var(--amber);
+      background: var(--amber-bg);
+      font-size: 14px;
+    }
+    .body-readonly a { color: var(--amber); border-bottom: 1px solid rgba(184,132,45,0.3); text-decoration: none; }
+    .body-readonly a:hover { border-bottom-color: var(--amber); }
+    .body-readonly img { max-width: 100%; height: auto; margin: 10px 0; }
+    .body-readonly:empty { display: none; }
+
+    /* Media gallery in detail */
+    .detail-media { margin-top: 36px; }
+    .detail-media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .detail-media-item {
+      background: var(--bg-paper);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      transition: border-color .15s;
+      overflow: hidden;
+    }
+    .detail-media-item:hover { border-color: var(--amber); }
+    .detail-media-thumb {
+      aspect-ratio: 16 / 10;
+      background: var(--bg-soft);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; color: var(--muted-2);
+      overflow: hidden;
+    }
+    .detail-media-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .detail-media-info {
+      padding: 10px 12px;
+      font-size: 12px; color: var(--ink);
+    }
+    .detail-media-info .type {
+      font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--amber); font-weight: 600; margin-bottom: 3px;
+    }
+    .detail-media-info .name {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* Third-tier sidebar in section view */
+    .section-with-tier {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 0;
+    }
+    .tier-side {
+      padding: 18px 18px 28px;
+      border-right: 1px solid var(--line-soft);
+      min-height: 400px;
+    }
+    .tier-side-label {
+      font-size: 10px; letter-spacing: .25em; text-transform: uppercase;
+      color: var(--muted); font-weight: 600;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .tier-side-list {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .tier-side-item {
+      text-align: left;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      border-left: 2px solid transparent;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .12s;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: inherit;
+    }
+    .tier-side-item:hover { background: var(--bg-soft); }
+    .tier-side-item.active {
+      background: var(--amber-bg);
+      border-left-color: var(--amber);
+      color: var(--amber);
+      font-weight: 600;
+    }
+    .tier-side-item .num { font-size: 11px; color: var(--muted); }
+    .tier-side-item.active .num { color: var(--amber); opacity: .8; }
+    .tier-side-add {
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px dashed var(--line-strong);
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .tier-side-add:hover { color: var(--ink); border-color: var(--ink); }
+
+    @media (max-width: 820px) {
+      .section-with-tier { grid-template-columns: 1fr; }
+      .tier-side {
+        border-right: none;
+        border-bottom: 1px solid var(--line-soft);
+        min-height: 0;
+        padding: 14px 24px;
+      }
+      .tier-side-list { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+      .tier-side-item { border-left: none; border-bottom: 2px solid transparent; padding: 6px 10px; background: var(--bg-paper); border: 1px solid var(--line); }
+      .tier-side-item.active { border: 1px solid var(--amber); border-left: 1px solid var(--amber); }
+      .detail-body { padding: 24px 20px 60px; }
+      .detail-title { font-size: 28px; }
+      .detail-title-input { font-size: 28px; }
+      .props-row { grid-template-columns: 100px 1fr; }
     }
 
     /* ============ Sync indicator ============ */
@@ -1583,6 +1899,374 @@ function EditModal({ item, sectionKey, subCategories, onClose, onSave, onSubCatA
 }
 
 /* Confirm dialog */
+/* ============ Media Preview (single-file fullscreen) ============ */
+function MediaPreview({ file, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+  }, [onClose]);
+
+  if (!file) return null;
+  const url = file.directUrl;
+  const mediaStyle = { maxWidth: '100%', maxHeight: 'calc(100vh - 120px)', objectFit: 'contain', display: 'block', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' };
+  let body;
+  if (isImageFile(file.name)) {
+    body = <img src={url} alt={file.name} style={mediaStyle} />;
+  } else if (isVideoFile(file.name)) {
+    body = <video src={url} controls autoPlay style={mediaStyle} />;
+  } else if (isPdfFile(file.name)) {
+    body = <div style={{maxWidth: 900, width: '100%'}}><PdfPreview url={url} /></div>;
+  } else {
+    body = (
+      <div className="modal-preview-empty">
+        <div className="mark">?</div>
+        <p style={{marginBottom: 16}}>이 파일은 미리보기가 지원되지 않습니다.</p>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{color:'var(--amber-soft)'}}>새 창에서 열기 →</a>
+      </div>
+    );
+  }
+  return (
+    <div className="modal" onClick={onClose}>
+      <div className="modal-header" onClick={e => e.stopPropagation()}>
+        <div className="modal-title-block">
+          <div className="modal-eyebrow">파일</div>
+          <div className="modal-title">{file.name}</div>
+        </div>
+        <div className="modal-actions">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="modal-btn">↗ 새 창</a>
+          <button className="modal-btn close" onClick={onClose}>✕ 닫기</button>
+        </div>
+      </div>
+      <div style={{flex: 1, overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32, background: 'var(--dark-soft)'}} onClick={e => e.stopPropagation()}>
+        <div style={{maxWidth: '100%', maxHeight: '100%'}}>{body}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ Rich Editor ============ */
+function RichEditor({ value, onChange, placeholder }) {
+  const ref = useRef(null);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (ref.current && !initialized.current) {
+      ref.current.innerHTML = value || '';
+      initialized.current = true;
+    }
+  }, []);
+
+  // Sync if value changes externally
+  useEffect(() => {
+    if (ref.current && initialized.current && document.activeElement !== ref.current) {
+      if (ref.current.innerHTML !== (value || '')) {
+        ref.current.innerHTML = value || '';
+      }
+    }
+  }, [value]);
+
+  function exec(cmd, arg) {
+    document.execCommand(cmd, false, arg || null);
+    ref.current.focus();
+    handleInput();
+  }
+
+  function handleInput() {
+    if (ref.current && onChange) {
+      onChange(ref.current.innerHTML);
+    }
+  }
+
+  function handleHeading(level) {
+    document.execCommand('formatBlock', false, level);
+    ref.current.focus();
+    handleInput();
+  }
+
+  function handleLink() {
+    const url = prompt('링크 URL을 입력하세요', 'https://');
+    if (url && url !== 'https://') exec('createLink', url);
+  }
+
+  function handlePaste(e) {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  }
+
+  return (
+    <>
+      <div className="editor-toolbar">
+        <button className="toolbar-btn h1" onClick={() => handleHeading('h1')} title="큰 제목">H1</button>
+        <button className="toolbar-btn h1" onClick={() => handleHeading('h2')} title="중제목">H2</button>
+        <button className="toolbar-btn h1" onClick={() => handleHeading('h3')} title="소제목">H3</button>
+        <button className="toolbar-btn" onClick={() => handleHeading('p')} title="본문">¶</button>
+        <span className="toolbar-sep"></span>
+        <button className="toolbar-btn" onClick={() => exec('bold')} title="굵게"><strong>B</strong></button>
+        <button className="toolbar-btn" onClick={() => exec('italic')} title="기울임"><em>I</em></button>
+        <button className="toolbar-btn" onClick={() => exec('underline')} title="밑줄"><u>U</u></button>
+        <span className="toolbar-sep"></span>
+        <button className="toolbar-btn" onClick={() => exec('insertUnorderedList')} title="목록">•</button>
+        <button className="toolbar-btn" onClick={() => exec('insertOrderedList')} title="번호 목록">1.</button>
+        <button className="toolbar-btn" onClick={() => handleHeading('blockquote')} title="강조 인용">"</button>
+        <span className="toolbar-sep"></span>
+        <button className="toolbar-btn" onClick={handleLink} title="링크">🔗</button>
+        <button className="toolbar-btn" onClick={() => exec('removeFormat')} title="서식 지우기">✕</button>
+      </div>
+      <div
+        ref={ref}
+        className="editor"
+        contentEditable
+        data-placeholder={placeholder || '내용을 입력하세요…'}
+        onInput={handleInput}
+        onPaste={handlePaste}
+      />
+    </>
+  );
+}
+
+/* ============ Detail Page ============ */
+function Detail({ item, sectionKey, data, onClose, onSave, onDelete, onToggleFav, isFav, onPreviewMedia, editMode }) {
+  const sectionMeta = getSectionMeta(sectionKey);
+  const fields = SECTION_FIELDS[sectionKey] || [];
+  const titleField = fields.find(f => f.isTitle) || fields[0];
+
+  const [editing, setEditing] = useState(item._isNew || false);
+  const [draft, setDraft] = useState(item);
+
+  useEffect(() => { setDraft(item); }, [item]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [item.id]);
+
+  const sub = useMemo(() => {
+    const subs = (data.sectionData[sectionKey] && data.sectionData[sectionKey].subCategories) || [];
+    return subs.find(s => String(s.id) === String(item.subId));
+  }, [data, sectionKey, item]);
+
+  const subSub = useMemo(() => {
+    if (!sub) return null;
+    const subSubs = sub.subSubCategories || [];
+    return subSubs.find(s => String(s.id) === String(item.subSubId));
+  }, [sub, item]);
+
+  function setF(key, val) { setDraft(prev => ({ ...prev, [key]: val })); }
+
+  function saveDraft() {
+    if (!draft[titleField.key]) {
+      alert(titleField.label + '을(를) 입력하세요.');
+      return;
+    }
+    onSave({ ...draft, updatedAt: Date.now() });
+    setEditing(false);
+  }
+
+  function cancelEdit() {
+    setDraft(item);
+    setEditing(false);
+  }
+
+  const files = (editing ? draft.files : item.files) || [];
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function uploadFiles(filesArr) {
+    if (!filesArr || filesArr.length === 0) return;
+    setUploading(true);
+    try {
+      const newFiles = [];
+      for (let i = 0; i < filesArr.length; i++) {
+        const result = await Store.uploadFile(filesArr[i]);
+        newFiles.push(result);
+      }
+      setDraft(prev => ({ ...prev, files: [...(prev.files || []), ...newFiles] }));
+    } catch(e) {
+      alert('업로드 실패: ' + (e.message || e));
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeFile(fileId) {
+    setDraft(prev => ({ ...prev, files: (prev.files || []).filter(f => f.id !== fileId) }));
+  }
+
+  return (
+    <div className="detail">
+      <div className="detail-topbar">
+        <div className="breadcrumb">
+          <span className="crumb" onClick={onClose}>{sectionMeta.name}</span>
+          {sub && <>
+            <span className="sep">›</span>
+            <span className="crumb">{sub.name}</span>
+          </>}
+          {subSub && <>
+            <span className="sep">›</span>
+            <span className="crumb">{subSub.name}</span>
+          </>}
+          <span className="sep">›</span>
+          <span className="current">{item[titleField.key] || '제목 없음'}</span>
+        </div>
+        <div className="detail-actions">
+          <button
+            className={'detail-btn fav ' + (isFav ? 'active' : '')}
+            onClick={() => onToggleFav(item)}
+            title="즐겨찾기"
+          >{isFav ? '★' : '☆'}</button>
+          {editMode && !editing && (
+            <button className="detail-btn" onClick={() => setEditing(true)}>편집</button>
+          )}
+          {editing && (
+            <>
+              <button className="detail-btn" onClick={cancelEdit}>취소</button>
+              <button className="detail-btn amber" onClick={saveDraft}>저장</button>
+            </>
+          )}
+          {editMode && !editing && (
+            <button className="detail-btn danger" onClick={() => onDelete(item)}>삭제</button>
+          )}
+          <button className="detail-btn" onClick={onClose}>← 돌아가기</button>
+        </div>
+      </div>
+
+      <div className="detail-cover"></div>
+
+      <div className="detail-body">
+        <div className="detail-eyebrow">
+          {sectionMeta.name}{sub ? ' · ' + sub.name : ''}{subSub ? ' · ' + subSub.name : ''}
+        </div>
+
+        {editing ? (
+          <input
+            className="detail-title-input"
+            value={draft[titleField.key] || ''}
+            onChange={e => setF(titleField.key, e.target.value)}
+            placeholder={titleField.label}
+          />
+        ) : (
+          <h1 className="detail-title">{item[titleField.key] || '제목 없음'}</h1>
+        )}
+
+        {/* Properties */}
+        <div className="props">
+          {fields.filter(f => !f.isTitle && f.key !== 'desc').map(f => {
+            const v = editing ? draft[f.key] : item[f.key];
+            if (!editing && !v) return null;
+            return (
+              <div className="props-row" key={f.key}>
+                <div className="props-label">{f.label}{f.required && editing ? ' *' : ''}</div>
+                <div className="props-value">
+                  {editing ? (
+                    f.type === 'textarea' ? (
+                      <textarea value={v || ''} onChange={e => setF(f.key, e.target.value)} placeholder={f.placeholder || ''} />
+                    ) : f.type === 'select' ? (
+                      <select value={v || ''} onChange={e => setF(f.key, e.target.value)}>
+                        <option value="">선택</option>
+                        {(f.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        type={f.type === 'date' ? 'date' : 'text'}
+                        value={v || ''}
+                        onChange={e => setF(f.key, e.target.value)}
+                        placeholder={f.placeholder || ''}
+                      />
+                    )
+                  ) : (
+                    f.key.toLowerCase().includes('url') && v ? (
+                      <a href={v} target="_blank" rel="noopener noreferrer">{v}</a>
+                    ) : v
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {/* Description short */}
+          {(editing || item.desc) && (
+            <div className="props-row">
+              <div className="props-label">한줄 설명</div>
+              <div className="props-value">
+                {editing ? (
+                  <textarea value={draft.desc || ''} onChange={e => setF('desc', e.target.value)} placeholder="짧은 설명" />
+                ) : item.desc}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Body content */}
+        <div className="body-section">
+          <div className="body-label">— 본문 내용</div>
+          {editing ? (
+            <RichEditor
+              value={draft.body || ''}
+              onChange={(html) => setF('body', html)}
+              placeholder="자유롭게 작성하세요. 헤딩·목록·강조·링크 등을 사용할 수 있습니다."
+            />
+          ) : (
+            item.body
+              ? <div className="body-readonly" dangerouslySetInnerHTML={{ __html: item.body }} />
+              : null
+          )}
+        </div>
+
+        {/* Files */}
+        {(editing || files.length > 0) && (
+          <div className="detail-media">
+            <div className="body-label">— 첨부 파일 ({files.length})</div>
+            {editing && (
+              <div style={{marginBottom: 12}}>
+                <button
+                  className="detail-btn"
+                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  disabled={uploading}
+                >{uploading ? '업로드 중…' : '+ 파일 추가'}</button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  style={{display: 'none'}}
+                  onChange={e => uploadFiles(e.target.files)}
+                />
+              </div>
+            )}
+            {files.length > 0 && (
+              <div className="detail-media-grid">
+                {files.map(f => (
+                  <div key={f.id} className="detail-media-item">
+                    <div className="detail-media-thumb" onClick={() => onPreviewMedia(f)}>
+                      {isImageFile(f.name) && f.directUrl
+                        ? <img src={f.directUrl} alt="" />
+                        : isVideoFile(f.name) ? '🎬'
+                        : isPdfFile(f.name) ? '📄'
+                        : '📎'}
+                    </div>
+                    <div className="detail-media-info">
+                      <div className="type">
+                        {isImageFile(f.name) ? '이미지' : isVideoFile(f.name) ? '영상' : isPdfFile(f.name) ? 'PDF' : '파일'}
+                      </div>
+                      <div className="name" title={f.name}>{f.name}</div>
+                      {editing && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeFile(f.id); }}
+                          style={{marginTop:4, fontSize:10, background:'transparent', border:'none', color:'var(--rose)', cursor:'pointer', padding: 0}}
+                        >삭제</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 function Confirm({ title, text, onConfirm, onCancel, danger }) {
   return (
     <div className="confirm-overlay" onClick={onCancel}>
@@ -1761,8 +2445,11 @@ function App() {
   const [data, setData] = useState(null);
   const [activeSection, setActiveSection] = useState('home');
   const [activeSub, setActiveSub] = useState('all');
+  const [activeSubSub, setActiveSubSub] = useState('all');
   const [search, setSearch] = useState('');
+  const [detailItem, setDetailItem] = useState(null);
   const [previewItem, setPreviewItem] = useState(null);
+  const [mediaPreview, setMediaPreview] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1816,21 +2503,35 @@ function App() {
     return sec ? (sec.subCategories || []) : [];
   }, [data, activeSection, isFavView]);
 
+  const activeSubObj = useMemo(() => {
+    if (activeSub === 'all') return null;
+    return subCategories.find(s => String(s.id) === String(activeSub));
+  }, [subCategories, activeSub]);
+
+  const subSubCategories = useMemo(() => {
+    if (!activeSubObj) return [];
+    return activeSubObj.subSubCategories || [];
+  }, [activeSubObj]);
+
   const filteredItems = useMemo(() => {
     let items = allItems;
     if (!isFavView && activeSub !== 'all') {
       items = items.filter(it => String(it.subId) === String(activeSub));
+      if (activeSubSub !== 'all') {
+        items = items.filter(it => String(it.subSubId || '') === String(activeSubSub));
+      }
     }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       items = items.filter(it => {
-        const haystack = [it.title, it.desc, it.author, it.speaker, it.specialty, it.career, it.location, it.source]
+        const body = (it.body || '').replace(/<[^>]*>/g, ' ');
+        const haystack = [it.title, it.desc, it.author, it.speaker, it.specialty, it.career, it.location, it.source, body]
           .filter(Boolean).join(' ').toLowerCase();
         return haystack.includes(q);
       });
     }
     return items;
-  }, [allItems, activeSub, search, isFavView]);
+  }, [allItems, activeSub, activeSubSub, search, isFavView]);
 
   const sectionCounts = useMemo(() => {
     const counts = {};
@@ -1853,6 +2554,21 @@ function App() {
   }, [data]);
 
   const totalFavs = useMemo(() => (data ? (data.favorites || []).length : 0), [data]);
+
+  // Sync detail item with latest data after edits
+  useEffect(() => {
+    if (!detailItem || !data) return;
+    const sk = detailItem._section;
+    const sec = data.sectionData[sk];
+    if (!sec) return;
+    const fresh = (sec.items || []).find(it => String(it.id) === String(detailItem.id));
+    if (fresh && JSON.stringify(fresh) !== JSON.stringify({ ...detailItem, _section: undefined })) {
+      setDetailItem({ ...fresh, _section: sk });
+    }
+  }, [data]);
+
+  // Reset subSub when sub changes
+  useEffect(() => { setActiveSubSub('all'); }, [activeSub]);
 
   // Reset sub when section changes
   useEffect(() => { setActiveSub('all'); }, [activeSection]);
@@ -1877,15 +2593,23 @@ function App() {
   }
 
   async function saveItem(item) {
-    const sectionKey = (editingItem && editingItem._section) || activeSection;
+    const sectionKey = item._section || (editingItem && editingItem._section) || activeSection;
     if (sectionKey === 'favorites') return;
+    // Strip internal flags that shouldn't be persisted
+    const clean = { ...item };
+    delete clean._section;
+    delete clean._isNew;
     const next = JSON.parse(JSON.stringify(data));
     const sec = next.sectionData[sectionKey];
     sec.items = sec.items || [];
-    const idx = sec.items.findIndex(x => String(x.id) === String(item.id));
-    if (idx >= 0) sec.items[idx] = item;
-    else sec.items.push(item);
+    const idx = sec.items.findIndex(x => String(x.id) === String(clean.id));
+    if (idx >= 0) sec.items[idx] = clean;
+    else sec.items.push(clean);
     setEditingItem(null);
+    // Update detail item to reflect saved state (re-attach _section)
+    if (detailItem && String(detailItem.id) === String(clean.id)) {
+      setDetailItem({ ...clean, _section: sectionKey });
+    }
     await persist(next);
   }
 
@@ -1893,7 +2617,7 @@ function App() {
     const sectionKey = item._section || activeSection;
     setConfirm({
       title: '자료 삭제',
-      text: `"${item.title}"을(를) 삭제하시겠습니까? 첨부 파일도 함께 삭제됩니다.`,
+      text: `"${item.title || '제목 없음'}"을(를) 삭제하시겠습니까? 첨부 파일도 함께 삭제됩니다.`,
       danger: true,
       onConfirm: async () => {
         setConfirm(null);
@@ -1902,8 +2626,11 @@ function App() {
         const removed = (sec.items || []).find(x => String(x.id) === String(item.id));
         sec.items = (sec.items || []).filter(x => String(x.id) !== String(item.id));
         next.favorites = (next.favorites || []).filter(id => id !== item.id);
-        // delete files in background
         if (removed && removed.files) removed.files.forEach(f => Store.deleteFile(f));
+        // Close detail if showing this item
+        if (detailItem && String(detailItem.id) === String(item.id)) {
+          setDetailItem(null);
+        }
         await persist(next);
       }
     });
@@ -1950,19 +2677,103 @@ function App() {
     });
   }
 
-  function openNew() {
+  // ------- 3rd tier (subSub) handlers -------
+  async function addSubSubCategory() {
+    if (!activeSubObj) { alert('먼저 2단계 분류를 선택하세요.'); return; }
+    const name = prompt('새 하위 분류 이름 (예: 사진, 영상, 링크)');
+    if (!name) return;
+    const next = JSON.parse(JSON.stringify(data));
+    const sec = next.sectionData[activeSection];
+    sec.subCategories = sec.subCategories.map(s => {
+      if (String(s.id) !== String(activeSubObj.id)) return s;
+      const subSubs = s.subSubCategories || [];
+      subSubs.push({ id: uid(), name: name.trim() });
+      return { ...s, subSubCategories: subSubs };
+    });
+    await persist(next);
+  }
+
+  async function renameSubSubCategory(subSub) {
+    const name = prompt('하위 분류 이름 수정', subSub.name);
+    if (!name || name === subSub.name) return;
+    const next = JSON.parse(JSON.stringify(data));
+    const sec = next.sectionData[activeSection];
+    sec.subCategories = sec.subCategories.map(s => {
+      if (String(s.id) !== String(activeSubObj.id)) return s;
+      const subSubs = (s.subSubCategories || []).map(ss =>
+        String(ss.id) === String(subSub.id) ? { ...ss, name: name.trim() } : ss
+      );
+      return { ...s, subSubCategories: subSubs };
+    });
+    await persist(next);
+  }
+
+  async function deleteSubSubCategory(subSub) {
+    setConfirm({
+      title: '하위 분류 삭제',
+      text: `"${subSub.name}" 하위 분류 안의 자료들은 분류 없음 상태가 됩니다. 계속하시겠습니까?`,
+      danger: true,
+      onConfirm: async () => {
+        setConfirm(null);
+        const next = JSON.parse(JSON.stringify(data));
+        const sec = next.sectionData[activeSection];
+        sec.subCategories = sec.subCategories.map(s => {
+          if (String(s.id) !== String(activeSubObj.id)) return s;
+          const subSubs = (s.subSubCategories || []).filter(ss => String(ss.id) !== String(subSub.id));
+          return { ...s, subSubCategories: subSubs };
+        });
+        // Clear subSubId from items that had it
+        sec.items = (sec.items || []).map(it =>
+          String(it.subSubId || '') === String(subSub.id) ? { ...it, subSubId: '' } : it
+        );
+        await persist(next);
+      }
+    });
+  }
+
+  async function openNew() {
     if (isFavView) {
       alert('새 자료는 각 섹션에서 등록해 주세요.');
       return;
     }
     if (subCategories.length === 0) {
-      // auto-create default sub
-      addSubCategory().then(() => {
-        setEditingItem({ _section: activeSection });
-      });
+      const name = prompt('첫 분류의 이름을 입력하세요\n(예: 편집디자인, 3D 애니메이션)');
+      if (!name) return;
+      const next = JSON.parse(JSON.stringify(data));
+      const sec = next.sectionData[activeSection];
+      sec.subCategories = sec.subCategories || [];
+      const newSub = { id: uid(), name: name.trim() };
+      sec.subCategories.push(newSub);
+      await persist(next);
+      // proceed with this new sub selected
+      const newItem = {
+        id: uid(),
+        _section: activeSection,
+        subId: newSub.id,
+        subSubId: activeSubSub !== 'all' ? activeSubSub : '',
+        title: '',
+        desc: '',
+        body: '',
+        files: [],
+        updatedAt: Date.now()
+      };
+      setDetailItem({ ...newItem, _isNew: true });
       return;
     }
-    setEditingItem({ _section: activeSection });
+    // Create blank item with reasonable defaults
+    const subId = activeSub !== 'all' ? activeSub : (subCategories[0] && subCategories[0].id);
+    const newItem = {
+      id: uid(),
+      _section: activeSection,
+      subId: subId,
+      subSubId: activeSubSub !== 'all' ? activeSubSub : '',
+      title: '',
+      desc: '',
+      body: '',
+      files: [],
+      updatedAt: Date.now()
+    };
+    setDetailItem({ ...newItem, _isNew: true });
   }
 
   // ============ Render ============
@@ -2049,8 +2860,21 @@ function App() {
         </aside>
 
         {/* MAIN */}
-        <main className="main" style={activeSection==='home' ? {background:'transparent',padding:0} : {}}>
-          {activeSection === 'home' ? (
+        <main className="main" style={(activeSection==='home' && !detailItem) ? {background:'transparent',padding:0} : (detailItem ? {background:'transparent',padding:0} : {})}>
+          {detailItem ? (
+            <Detail
+              item={detailItem}
+              sectionKey={detailItem._section || activeSection}
+              data={data}
+              isFav={isFav(detailItem.id)}
+              onClose={() => setDetailItem(null)}
+              onSave={saveItem}
+              onDelete={deleteItem}
+              onToggleFav={toggleFav}
+              onPreviewMedia={(file) => setMediaPreview(file)}
+              editMode={editMode}
+            />
+          ) : activeSection === 'home' ? (
             <Home
               data={data}
               sectionCounts={sectionCounts}
@@ -2083,7 +2907,7 @@ function App() {
                 </div>
               </header>
 
-              {/* Sub-categories */}
+              {/* 2단계 chips */}
               {!isFavView && (
                 <div className="subcat-bar">
                   <button
@@ -2115,69 +2939,129 @@ function App() {
                 </div>
               )}
 
-              {/* Grid */}
-              <div className="grid-wrap">
-                {filteredItems.length === 0 ? (
-                  <div className="empty">
-                    <div className="empty-mark">∅</div>
-                    <div className="empty-title">자료가 없습니다</div>
-                    <div className="empty-text">
-                      {search ? '검색 조건과 일치하는 자료가 없습니다.' :
-                        isFavView ? '카드의 별 아이콘을 눌러 즐겨찾기에 추가하세요.' :
-                        editMode ? '+ 새 자료 버튼으로 등록하세요.' : '편집 모드에서 자료를 등록할 수 있습니다.'}
+              {/* 3단계: only when sub is selected */}
+              {!isFavView && activeSubObj ? (
+                <div className="section-with-tier">
+                  <aside className="tier-side">
+                    <div className="tier-side-label">{activeSubObj.name} ›</div>
+                    <div className="tier-side-list">
+                      <button
+                        className={'tier-side-item ' + (activeSubSub === 'all' ? 'active' : '')}
+                        onClick={() => setActiveSubSub('all')}
+                      >
+                        <span>전체</span>
+                        <span className="num">{allItems.filter(it => String(it.subId) === String(activeSub)).length}</span>
+                      </button>
+                      {subSubCategories.map(ss => {
+                        const c = allItems.filter(it => String(it.subId) === String(activeSub) && String(it.subSubId || '') === String(ss.id)).length;
+                        return (
+                          <button
+                            key={ss.id}
+                            className={'tier-side-item ' + (String(activeSubSub) === String(ss.id) ? 'active' : '')}
+                            onClick={() => setActiveSubSub(ss.id)}
+                            onContextMenu={(e) => {
+                              if (!editMode) return;
+                              e.preventDefault();
+                              const action = prompt('1: 이름 변경 / 2: 삭제', '1');
+                              if (action === '1') renameSubSubCategory(ss);
+                              else if (action === '2') deleteSubSubCategory(ss);
+                            }}
+                          >
+                            <span>{ss.name}</span>
+                            <span className="num">{c}</span>
+                          </button>
+                        );
+                      })}
+                      {editMode && (
+                        <button className="tier-side-add" onClick={addSubSubCategory}>+ 하위 분류</button>
+                      )}
+                    </div>
+                  </aside>
+
+                  <div>
+                    <div className="grid-wrap">
+                      {filteredItems.length === 0 ? (
+                        <div className="empty">
+                          <div className="empty-mark">∅</div>
+                          <div className="empty-title">자료가 없습니다</div>
+                          <div className="empty-text">
+                            {search ? '검색 조건과 일치하는 자료가 없습니다.' :
+                              editMode ? '+ 새 자료 버튼으로 등록하세요.' : '편집 모드에서 자료를 등록할 수 있습니다.'}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid">
+                          {filteredItems.map(item => {
+                            const sectionKey = item._section || activeSection;
+                            const subs = data.sectionData[sectionKey] ? data.sectionData[sectionKey].subCategories : [];
+                            const sub = subs.find(s => String(s.id) === String(item.subId));
+                            return (
+                              <Card
+                                key={item.id}
+                                item={item}
+                                sectionKey={sectionKey}
+                                subCatName={sub ? sub.name : null}
+                                onOpen={(it)=>setDetailItem({...it, _section: sectionKey})}
+                                onToggleFav={toggleFav}
+                                isFav={isFav(item.id)}
+                                onEdit={(it)=>setDetailItem({...it, _section: sectionKey})}
+                                onDelete={(it)=>deleteItem({...it, _section: sectionKey})}
+                                editMode={editMode}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
-                ) : (
-                  <div className="grid">
-                    {filteredItems.map(item => {
-                      const sectionKey = item._section || activeSection;
-                      const subs = data.sectionData[sectionKey] ? data.sectionData[sectionKey].subCategories : [];
-                      const sub = subs.find(s => String(s.id) === String(item.subId));
-                      return (
-                        <Card
-                          key={item.id}
-                          item={item}
-                          sectionKey={sectionKey}
-                          subCatName={sub ? sub.name : null}
-                          onOpen={(it)=>setPreviewItem(it)}
-                          onToggleFav={toggleFav}
-                          isFav={isFav(item.id)}
-                          onEdit={(it)=>setEditingItem(it)}
-                          onDelete={(it)=>deleteItem(it)}
-                          editMode={editMode}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="grid-wrap">
+                  {filteredItems.length === 0 ? (
+                    <div className="empty">
+                      <div className="empty-mark">∅</div>
+                      <div className="empty-title">자료가 없습니다</div>
+                      <div className="empty-text">
+                        {search ? '검색 조건과 일치하는 자료가 없습니다.' :
+                          isFavView ? '카드의 별 아이콘을 눌러 즐겨찾기에 추가하세요.' :
+                          editMode ? '+ 새 자료 버튼으로 등록하세요.' : '편집 모드에서 자료를 등록할 수 있습니다.'}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid">
+                      {filteredItems.map(item => {
+                        const sectionKey = item._section || activeSection;
+                        const subs = data.sectionData[sectionKey] ? data.sectionData[sectionKey].subCategories : [];
+                        const sub = subs.find(s => String(s.id) === String(item.subId));
+                        return (
+                          <Card
+                            key={item.id}
+                            item={item}
+                            sectionKey={sectionKey}
+                            subCatName={sub ? sub.name : null}
+                            onOpen={(it)=>setDetailItem({...it, _section: sectionKey})}
+                            onToggleFav={toggleFav}
+                            isFav={isFav(item.id)}
+                            onEdit={(it)=>setDetailItem({...it, _section: sectionKey})}
+                            onDelete={(it)=>deleteItem({...it, _section: sectionKey})}
+                            editMode={editMode}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
         </main>
       </div>
 
-      {/* Preview */}
-      {previewItem && (
-        <PreviewModal
-          item={previewItem}
-          sectionKey={previewItem._section || activeSection}
-          onClose={()=>setPreviewItem(null)}
-          onEdit={(it)=>{ setEditingItem(it); setPreviewItem(null); }}
-          onToggleFav={toggleFav}
-          isFav={isFav(previewItem.id)}
-          editMode={editMode}
-        />
-      )}
-
-      {/* Edit */}
-      {editingItem && (
-        <EditModal
-          item={editingItem}
-          sectionKey={editingItem._section || activeSection}
-          subCategories={subCategories}
-          onClose={()=>setEditingItem(null)}
-          onSave={saveItem}
-          onSubCatAdd={addSubCategory}
+      {/* Media Preview (when clicking a file in detail page) */}
+      {mediaPreview && (
+        <MediaPreview
+          file={mediaPreview}
+          onClose={()=>setMediaPreview(null)}
         />
       )}
 
