@@ -1686,31 +1686,40 @@ const Store = {
   },
   async load() {
     try {
+      console.log('[STORE] load: starting, user=', fbAuth.currentUser && fbAuth.currentUser.email);
       const snap = await DOC_REF.get();
       if (snap.exists) {
         const d = this.ensureShape(snap.data());
         d._docUpdatedAt = snap.data()._docUpdatedAt || 0;
+        const itemCount = Object.keys(d.sectionData || {}).reduce((acc, k) => acc + ((d.sectionData[k].items || []).length), 0);
+        console.log('[STORE] load: success, items=', itemCount, 'updatedAt=', d._docUpdatedAt);
         return d;
       }
+      console.log('[STORE] load: doc does not exist, using defaults');
       const empty = this.defaultData();
       empty._docUpdatedAt = 0;
       return empty;
     } catch(e) {
-      console.error('load error', e);
+      console.error('[STORE] load FAILED', e, 'code=', e.code, 'message=', e.message);
       throw e;
     }
   },
-  // Save with conflict check. expectedUpdatedAt = the _docUpdatedAt the
-  // current client started from. If the doc on Firestore now has a newer
-  // _docUpdatedAt, someone else saved in the meantime → reject with a
-  // 'conflict' error so the UI can prompt to refresh.
+  // Save with conflict check.
   async save(data, expectedUpdatedAt) {
+    const itemCount = Object.keys(data.sectionData || {}).reduce((acc, k) => acc + ((data.sectionData[k].items || []).length), 0);
+    console.log('[STORE] save: starting, items=', itemCount, 'expectedUpdatedAt=', expectedUpdatedAt, 'user=', fbAuth.currentUser && fbAuth.currentUser.email);
+    if (!fbAuth.currentUser) {
+      console.error('[STORE] save BLOCKED: not authenticated');
+      alert('로그인이 만료되었습니다. 페이지를 새로고침하고 다시 로그인해 주세요.\n(작성 중인 내용을 잃지 않기 위해 새로고침 전에 텍스트를 복사해 두세요.)');
+      throw new Error('NOT_AUTHENTICATED');
+    }
     try {
-      // Check current server timestamp first (cheap read)
       const snap = await DOC_REF.get();
       if (snap.exists) {
         const serverUpdatedAt = (snap.data() && snap.data()._docUpdatedAt) || 0;
+        console.log('[STORE] save: serverUpdatedAt=', serverUpdatedAt);
         if (expectedUpdatedAt !== undefined && expectedUpdatedAt !== null && serverUpdatedAt > expectedUpdatedAt) {
+          console.warn('[STORE] save: CONFLICT detected');
           const err = new Error('CONFLICT');
           err.code = 'conflict';
           err.serverUpdatedAt = serverUpdatedAt;
@@ -1718,17 +1727,31 @@ const Store = {
         }
       }
       const newUpdatedAt = Date.now();
-      // Strip any pre-existing _docUpdatedAt from data and apply fresh
       const toWrite = { ...data };
       delete toWrite._docUpdatedAt;
       toWrite._docUpdatedAt = newUpdatedAt;
+      // Firestore single document max size is ~1MB
+      const sizeBytes = new Blob([JSON.stringify(toWrite)]).size;
+      const sizeKB = (sizeBytes / 1024).toFixed(1);
+      console.log('[STORE] save: payload size=', sizeKB, 'KB');
+      if (sizeBytes > 900 * 1024) {
+        console.warn('[STORE] save: payload approaching 1MB Firestore limit!');
+        if (sizeBytes > 1048000) {
+          alert('⚠️ 저장 실패: 데이터가 1MB를 초과했습니다 (' + sizeKB + 'KB).\n\nFirestore는 단일 문서 최대 1MB로 제한됩니다. 자료 일부를 삭제하시거나, 본문 내용을 줄여주세요.');
+          const err = new Error('DOC_TOO_LARGE');
+          err.code = 'too-large';
+          throw err;
+        }
+      }
+      console.log('[STORE] save: writing to Firestore...');
       await DOC_REF.set(toWrite, { merge: false });
+      console.log('[STORE] save: SUCCESS, newUpdatedAt=', newUpdatedAt);
       showSync('동기화 완료');
       return newUpdatedAt;
     } catch(e) {
       if (e.code === 'conflict') throw e;
-      console.error('save error', e);
-      alert('저장 실패: ' + (e.message || e) + '\n(이전 화면으로 되돌립니다.)');
+      console.error('[STORE] save FAILED', e, 'code=', e.code, 'message=', e.message);
+      alert('저장 실패: ' + (e.message || e) + '\n\n개발자도구(F12) Console 탭의 빨간색 에러 메시지를 확인해 주세요.');
       throw e;
     }
   },
