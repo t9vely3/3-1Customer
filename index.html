@@ -1561,7 +1561,11 @@ const fbAuth = firebase.auth();
 const fbDb = firebase.firestore();
 try { fbDb.settings({ ignoreUndefinedProperties: true }); } catch(e) {}
 const fbStorage = firebase.storage();
+// Legacy single-doc (kept as backup, used for migration)
 const DOC_REF = fbDb.collection('app').doc('main');
+// New structure: meta doc + per-item collection
+const META_REF = fbDb.collection('app').doc('meta');
+const ITEMS_COL = fbDb.collection('items');
 
 /* ============ Constants ============ */
 const SECTIONS = [
@@ -1653,7 +1657,11 @@ function pickThumb(item) {
   return null;
 }
 
-/* ============ Data Layer ============ */
+/* ============ Data Layer (Split-Document Model) ============
+   - meta/main : structure (sections, subCategories with subSubCategories), home content, favorites
+   - items/{itemId} : one document per data item (title, body, files, ...)
+   This avoids the 1MB-per-document Firestore limit.
+================================================================= */
 const Store = {
   defaultHome() {
     return {
@@ -1665,6 +1673,7 @@ const Store = {
       meta: 'EST. SBS Academy · Computer Art'
     };
   },
+  // In-memory shape used by the React app — same as before so UI doesn't change.
   defaultData() {
     const sd = {};
     SECTIONS.forEach(s => { if (!s.special) sd[s.key] = { subCategories: [], items: [] }; });
@@ -1677,25 +1686,68 @@ const Store = {
       if (s.special) return;
       if (!d.sectionData[s.key]) d.sectionData[s.key] = { subCategories: [], items: [] };
       d.sectionData[s.key].subCategories = d.sectionData[s.key].subCategories || [];
-      d.sectionData[s.key].items = d.sectionData[s.key].items || [];
+      // Strip _section from items in storage shape (it's a transient nav field)
+      d.sectionData[s.key].items = (d.sectionData[s.key].items || []).map(it => {
+        if (!it) return it;
+        const { _section, ...rest } = it;
+        return rest;
+      });
     });
     d.favorites = d.favorites || [];
     d.homeContent = Object.assign(this.defaultHome(), d.homeContent || {});
     d.settings = d.settings || {};
     return d;
   },
+
+  // ===== LOAD =====
+  // Strategy:
+  // 1) Try meta/main + items/* (new model)
+  // 2) If meta doesn't exist BUT legacy app/main does → MIGRATE
+  // 3) Otherwise → empty defaults
   async load() {
+    const user = fbAuth.currentUser && fbAuth.currentUser.email;
+    console.log('[STORE] load: starting, user=', user);
     try {
-      console.log('[STORE] load: starting, user=', fbAuth.currentUser && fbAuth.currentUser.email);
-      const snap = await DOC_REF.get();
-      if (snap.exists) {
-        const d = this.ensureShape(snap.data());
-        d._docUpdatedAt = snap.data()._docUpdatedAt || 0;
-        const itemCount = Object.keys(d.sectionData || {}).reduce((acc, k) => acc + ((d.sectionData[k].items || []).length), 0);
-        console.log('[STORE] load: success, items=', itemCount, 'updatedAt=', d._docUpdatedAt);
+      const metaSnap = await META_REF.get();
+      if (metaSnap.exists) {
+        // New model
+        const meta = metaSnap.data();
+        const itemsSnap = await ITEMS_COL.get();
+        const itemsBySection = {};
+        itemsSnap.forEach(doc => {
+          const it = doc.data();
+          const sk = it._section;
+          if (!sk) return;
+          if (!itemsBySection[sk]) itemsBySection[sk] = [];
+          // Strip internal fields when returning
+          const { _section, ...rest } = it;
+          rest._section = sk; // keep _section for app-side use
+          itemsBySection[sk].push(rest);
+        });
+        const d = this.ensureShape({
+          sectionData: this._buildSectionData(meta.sectionData || {}, itemsBySection),
+          favorites: meta.favorites || [],
+          homeContent: meta.homeContent || this.defaultHome(),
+          settings: meta.settings || {}
+        });
+        d._docUpdatedAt = meta._docUpdatedAt || 0;
+        const totalItems = Object.values(itemsBySection).reduce((a,b)=>a+b.length,0);
+        console.log('[STORE] load: NEW MODEL success, items=', totalItems, 'updatedAt=', d._docUpdatedAt);
         return d;
       }
-      console.log('[STORE] load: doc does not exist, using defaults');
+
+      // Meta doesn't exist — try migration from legacy
+      console.log('[STORE] load: no meta doc, checking legacy...');
+      const legacySnap = await DOC_REF.get();
+      if (legacySnap.exists) {
+        console.log('[STORE] load: legacy doc found, MIGRATING...');
+        const legacyData = legacySnap.data();
+        await this._migrateFromLegacy(legacyData);
+        // After migration, load fresh from new model
+        return this.load();
+      }
+
+      console.log('[STORE] load: no data anywhere, using defaults');
       const empty = this.defaultData();
       empty._docUpdatedAt = 0;
       return empty;
@@ -1704,19 +1756,99 @@ const Store = {
       throw e;
     }
   },
-  // Save with conflict check.
+
+  // Combine meta sectionData (no items) with itemsBySection
+  _buildSectionData(metaSectionData, itemsBySection) {
+    const out = {};
+    SECTIONS.forEach(s => {
+      if (s.special) return;
+      const meta = metaSectionData[s.key] || {};
+      // Strip _section from each item
+      const cleanItems = (itemsBySection[s.key] || []).map(it => {
+        const { _section, ...rest } = it;
+        return rest;
+      });
+      out[s.key] = {
+        subCategories: meta.subCategories || [],
+        items: cleanItems
+      };
+    });
+    return out;
+  },
+
+  // Strip items out of sectionData → only structure (small, well under 1MB)
+  _stripItemsFromSectionData(sectionData) {
+    const out = {};
+    Object.keys(sectionData || {}).forEach(k => {
+      out[k] = {
+        subCategories: sectionData[k].subCategories || []
+      };
+    });
+    return out;
+  },
+
+  // ===== MIGRATION =====
+  // Move legacy app/main → meta/main + items/*
+  async _migrateFromLegacy(legacyData) {
+    console.log('[MIGRATE] starting...');
+    const sectionData = legacyData.sectionData || {};
+    const allItems = [];
+    Object.keys(sectionData).forEach(sk => {
+      (sectionData[sk].items || []).forEach(it => {
+        allItems.push({ ...it, _section: sk });
+      });
+    });
+    console.log('[MIGRATE] writing', allItems.length, 'items to items collection...');
+
+    // Use batched writes (max 500 ops per batch)
+    const CHUNK = 400;
+    for (let i = 0; i < allItems.length; i += CHUNK) {
+      const batch = fbDb.batch();
+      const slice = allItems.slice(i, i + CHUNK);
+      slice.forEach(it => {
+        const id = String(it.id || uid());
+        batch.set(ITEMS_COL.doc(id), { ...it, id });
+      });
+      await batch.commit();
+      console.log('[MIGRATE] batch', Math.floor(i/CHUNK)+1, 'committed (' + slice.length + ' items)');
+    }
+
+    // Write meta doc
+    const meta = {
+      sectionData: this._stripItemsFromSectionData(sectionData),
+      favorites: legacyData.favorites || [],
+      homeContent: legacyData.homeContent || this.defaultHome(),
+      settings: legacyData.settings || {},
+      _docUpdatedAt: Date.now()
+    };
+    await META_REF.set(meta);
+    console.log('[MIGRATE] meta doc written. Migration complete.');
+    // Note: legacy doc is NOT deleted — it remains as a backup.
+  },
+
+  // ===== SAVE =====
+  // The app passes a "data" snapshot in the same shape as defaultData().
+  // We diff it against the previous and write only what's needed.
+  // For simplicity here, we write meta + all items that exist in `data`.
+  // Items that no longer exist in data but do in Firestore are removed.
   async save(data, expectedUpdatedAt) {
-    const itemCount = Object.keys(data.sectionData || {}).reduce((acc, k) => acc + ((data.sectionData[k].items || []).length), 0);
-    console.log('[STORE] save: starting, items=', itemCount, 'expectedUpdatedAt=', expectedUpdatedAt, 'user=', fbAuth.currentUser && fbAuth.currentUser.email);
+    const allItems = [];
+    Object.keys(data.sectionData || {}).forEach(sk => {
+      (data.sectionData[sk].items || []).forEach(it => {
+        allItems.push({ ...it, _section: sk });
+      });
+    });
+    console.log('[STORE] save: starting, items=', allItems.length, 'expectedUpdatedAt=', expectedUpdatedAt, 'user=', fbAuth.currentUser && fbAuth.currentUser.email);
     if (!fbAuth.currentUser) {
       console.error('[STORE] save BLOCKED: not authenticated');
       alert('로그인이 만료되었습니다. 페이지를 새로고침하고 다시 로그인해 주세요.\n(작성 중인 내용을 잃지 않기 위해 새로고침 전에 텍스트를 복사해 두세요.)');
       throw new Error('NOT_AUTHENTICATED');
     }
     try {
-      const snap = await DOC_REF.get();
-      if (snap.exists) {
-        const serverUpdatedAt = (snap.data() && snap.data()._docUpdatedAt) || 0;
+      // Concurrency check
+      const metaSnap = await META_REF.get();
+      if (metaSnap.exists) {
+        const serverUpdatedAt = (metaSnap.data() && metaSnap.data()._docUpdatedAt) || 0;
         console.log('[STORE] save: serverUpdatedAt=', serverUpdatedAt);
         if (expectedUpdatedAt !== undefined && expectedUpdatedAt !== null && serverUpdatedAt > expectedUpdatedAt) {
           console.warn('[STORE] save: CONFLICT detected');
@@ -1726,25 +1858,80 @@ const Store = {
           throw err;
         }
       }
+
       const newUpdatedAt = Date.now();
-      const toWrite = { ...data };
-      delete toWrite._docUpdatedAt;
-      toWrite._docUpdatedAt = newUpdatedAt;
-      // Firestore single document max size is ~1MB
-      const sizeBytes = new Blob([JSON.stringify(toWrite)]).size;
-      const sizeKB = (sizeBytes / 1024).toFixed(1);
-      console.log('[STORE] save: payload size=', sizeKB, 'KB');
-      if (sizeBytes > 900 * 1024) {
-        console.warn('[STORE] save: payload approaching 1MB Firestore limit!');
-        if (sizeBytes > 1048000) {
-          alert('⚠️ 저장 실패: 데이터가 1MB를 초과했습니다 (' + sizeKB + 'KB).\n\nFirestore는 단일 문서 최대 1MB로 제한됩니다. 자료 일부를 삭제하시거나, 본문 내용을 줄여주세요.');
-          const err = new Error('DOC_TOO_LARGE');
-          err.code = 'too-large';
-          throw err;
-        }
+      // 1) Write meta doc
+      const meta = {
+        sectionData: this._stripItemsFromSectionData(data.sectionData || {}),
+        favorites: data.favorites || [],
+        homeContent: data.homeContent || this.defaultHome(),
+        settings: data.settings || {},
+        _docUpdatedAt: newUpdatedAt
+      };
+      const metaSize = new Blob([JSON.stringify(meta)]).size;
+      console.log('[STORE] save: meta size=', (metaSize/1024).toFixed(1), 'KB');
+      if (metaSize > 900 * 1024) {
+        console.warn('[STORE] save: meta approaching 1MB! (too many subcategories?)');
       }
-      console.log('[STORE] save: writing to Firestore...');
-      await DOC_REF.set(toWrite, { merge: false });
+      await META_REF.set(meta);
+
+      // 2) Determine which items to upsert and which to delete
+      const existingItemsSnap = await ITEMS_COL.get();
+      const existingIds = new Set();
+      existingItemsSnap.forEach(d => existingIds.add(d.id));
+      const currentIds = new Set(allItems.map(it => String(it.id)));
+
+      // Upsert each item; skip items that haven't changed (compare against existing)
+      const existingById = {};
+      existingItemsSnap.forEach(d => { existingById[d.id] = d.data(); });
+
+      // Per-item size check — only single-item 1MB matters here (rare)
+      const oversizeItems = [];
+      const itemsToWrite = [];
+      for (const it of allItems) {
+        const id = String(it.id);
+        const newDoc = { ...it, id };
+        // Compare with existing (if same, skip)
+        const existingDoc = existingById[id];
+        if (existingDoc && JSON.stringify(existingDoc) === JSON.stringify(newDoc)) {
+          continue; // unchanged, no write needed
+        }
+        const itemSize = new Blob([JSON.stringify(newDoc)]).size;
+        if (itemSize > 1000 * 1024) {
+          oversizeItems.push({ id, title: it.title, sizeKB: (itemSize/1024).toFixed(1) });
+          continue;
+        }
+        itemsToWrite.push(newDoc);
+      }
+
+      if (oversizeItems.length > 0) {
+        const list = oversizeItems.map(x => `• ${x.title || x.id} (${x.sizeKB} KB)`).join('\n');
+        alert('⚠️ 다음 자료는 단일 자료가 1MB를 초과해 저장되지 않습니다.\n본문을 줄이거나 첨부 파일을 분리해 주세요.\n\n' + list);
+      }
+
+      // 3) Delete items that no longer exist
+      const idsToDelete = [];
+      existingIds.forEach(id => { if (!currentIds.has(id)) idsToDelete.push(id); });
+
+      console.log('[STORE] save: writing', itemsToWrite.length, 'items, deleting', idsToDelete.length);
+
+      // Batch writes (max 500 ops per batch)
+      const ops = [
+        ...itemsToWrite.map(it => ({ type: 'set', id: String(it.id), data: it })),
+        ...idsToDelete.map(id => ({ type: 'delete', id }))
+      ];
+      const CHUNK = 400;
+      for (let i = 0; i < ops.length; i += CHUNK) {
+        const batch = fbDb.batch();
+        const slice = ops.slice(i, i + CHUNK);
+        slice.forEach(op => {
+          const ref = ITEMS_COL.doc(op.id);
+          if (op.type === 'set') batch.set(ref, op.data);
+          else batch.delete(ref);
+        });
+        await batch.commit();
+      }
+
       console.log('[STORE] save: SUCCESS, newUpdatedAt=', newUpdatedAt);
       showSync('동기화 완료');
       return newUpdatedAt;
