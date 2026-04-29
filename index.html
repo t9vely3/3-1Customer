@@ -1687,18 +1687,46 @@ const Store = {
   async load() {
     try {
       const snap = await DOC_REF.get();
-      if (snap.exists) return this.ensureShape(snap.data());
-      return this.defaultData();
+      if (snap.exists) {
+        const d = this.ensureShape(snap.data());
+        d._docUpdatedAt = snap.data()._docUpdatedAt || 0;
+        return d;
+      }
+      const empty = this.defaultData();
+      empty._docUpdatedAt = 0;
+      return empty;
     } catch(e) {
       console.error('load error', e);
       throw e;
     }
   },
-  async save(data) {
+  // Save with conflict check. expectedUpdatedAt = the _docUpdatedAt the
+  // current client started from. If the doc on Firestore now has a newer
+  // _docUpdatedAt, someone else saved in the meantime → reject with a
+  // 'conflict' error so the UI can prompt to refresh.
+  async save(data, expectedUpdatedAt) {
     try {
-      await DOC_REF.set(data, { merge: false });
+      // Check current server timestamp first (cheap read)
+      const snap = await DOC_REF.get();
+      if (snap.exists) {
+        const serverUpdatedAt = (snap.data() && snap.data()._docUpdatedAt) || 0;
+        if (expectedUpdatedAt !== undefined && expectedUpdatedAt !== null && serverUpdatedAt > expectedUpdatedAt) {
+          const err = new Error('CONFLICT');
+          err.code = 'conflict';
+          err.serverUpdatedAt = serverUpdatedAt;
+          throw err;
+        }
+      }
+      const newUpdatedAt = Date.now();
+      const toWrite = { ...data, _docUpdatedAt: newUpdatedAt };
+      // Don't store transient field
+      delete toWrite._docUpdatedAt; // remove first to ensure it's set fresh
+      toWrite._docUpdatedAt = newUpdatedAt;
+      await DOC_REF.set(toWrite, { merge: false });
       showSync('동기화 완료');
+      return newUpdatedAt;
     } catch(e) {
+      if (e.code === 'conflict') throw e;
       console.error('save error', e);
       alert('저장 실패: ' + (e.message || e));
       throw e;
@@ -3071,6 +3099,9 @@ function App() {
   const [confirm, setConfirm] = useState(null);
   const [user, setUser] = useState(fbAuth.currentUser);
   const [collapsedSections, setCollapsedSections] = useState({});
+  // Tracks the _docUpdatedAt our local data is based on. Updated on load and
+  // after every successful save. Used for optimistic concurrency check.
+  const docUpdatedAtRef = useRef(0);
 
   // Auth listener
   useEffect(() => {
@@ -3080,17 +3111,48 @@ function App() {
 
   // Load data
   useEffect(() => {
-    Store.load().then(d => setData(d)).catch(e => {
+    Store.load().then(d => {
+      docUpdatedAtRef.current = d._docUpdatedAt || 0;
+      setData(d);
+    }).catch(e => {
       alert('데이터 로드 실패: ' + (e.message || e));
       setData(Store.defaultData());
     });
   }, []);
 
-  // Save helper
+  // Save helper with conflict detection.
+  // - On conflict: alert user, refresh data from server, DO NOT apply local changes
+  // - On other error: alert and revert
+  // - On success: update docUpdatedAt to the new server timestamp
   const persist = useCallback(async (next) => {
+    const prev = data;
+    const baseUpdatedAt = docUpdatedAtRef.current;
+    // Optimistic update
     setData(next);
-    await Store.save(next);
-  }, []);
+    try {
+      const newUpdatedAt = await Store.save(next, baseUpdatedAt);
+      docUpdatedAtRef.current = newUpdatedAt;
+    } catch (e) {
+      if (e.code === 'conflict') {
+        // Revert local state and pull fresh
+        try {
+          const fresh = await Store.load();
+          docUpdatedAtRef.current = fresh._docUpdatedAt || 0;
+          setData(fresh);
+        } catch (e2) {
+          if (prev) setData(prev);
+        }
+        alert(
+          '⚠️ 다른 사람이 동시에 저장한 변경 사항이 있습니다.\n\n' +
+          '방금 입력하신 내용은 저장되지 않았습니다.\n' +
+          '최신 데이터로 새로고침했으니, 내용을 다시 작성해 주세요.'
+        );
+      } else {
+        // Generic save error — revert
+        if (prev) setData(prev);
+      }
+    }
+  }, [data]);
 
   // Derived: current section data + filtered items
   const currentSection = useMemo(() => getSectionMeta(activeSection), [activeSection]);
