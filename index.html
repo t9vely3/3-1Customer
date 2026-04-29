@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
 
   <!-- React -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -1235,6 +1236,18 @@
     }
     .toolbar-btn:hover { background: var(--bg-paper); border-color: var(--line); }
     .toolbar-btn.h1 { font-weight: 700; }
+    .toolbar-select {
+      padding: 5px 8px;
+      background: var(--bg-paper);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+    }
+    .toolbar-select:hover { border-color: var(--ink-strong); }
+    .toolbar-select:focus { border-color: var(--ink-strong); }
     .toolbar-sep {
       width: 1px; background: var(--line); margin: 4px 4px;
     }
@@ -2201,9 +2214,78 @@ function RichEditor({ value, onChange, placeholder }) {
     document.execCommand('insertText', false, text);
   }
 
+  // Wrap selection in a span with custom style. If nothing selected, do nothing.
+  function applyInlineStyle(styleProp, value) {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+      // Nothing selected — focus and notify gently
+      ref.current.focus();
+      return;
+    }
+    const range = sel.getRangeAt(0);
+    // Make sure the selection is inside the editor
+    if (!ref.current.contains(range.commonAncestorContainer)) return;
+
+    const span = document.createElement('span');
+    span.style[styleProp] = value;
+    try {
+      const contents = range.extractContents();
+      span.appendChild(contents);
+      range.insertNode(span);
+      // Reselect inserted span
+      sel.removeAllRanges();
+      const newRange = document.createRange();
+      newRange.selectNodeContents(span);
+      sel.addRange(newRange);
+    } catch (e) {
+      // Fallback if selection crosses elements
+    }
+    ref.current.focus();
+    handleInput();
+  }
+
+  function handleFontChange(e) {
+    const v = e.target.value;
+    if (!v) return;
+    applyInlineStyle('fontFamily', v);
+    e.target.value = '';
+  }
+
+  function handleSizeChange(e) {
+    const v = e.target.value;
+    if (!v) return;
+    applyInlineStyle('fontSize', v);
+    e.target.value = '';
+  }
+
+  const FONTS = [
+    { label: 'Pretendard (기본)', value: "'Pretendard', sans-serif" },
+    { label: 'Noto Serif KR (명조)', value: "'Noto Serif KR', serif" },
+    { label: '나눔고딕', value: "'Nanum Gothic', sans-serif" },
+    { label: '나눔명조', value: "'Nanum Myeongjo', serif" },
+    { label: '고운돋움', value: "'Gowun Dodum', sans-serif" }
+  ];
+
+  const SIZES = [
+    { label: '작게', value: '12px' },
+    { label: '보통', value: '15px' },
+    { label: '크게', value: '18px' },
+    { label: '제목', value: '22px' },
+    { label: '큰 제목', value: '28px' }
+  ];
+
   return (
     <>
       <div className="editor-toolbar">
+        <select className="toolbar-select" defaultValue="" onChange={handleFontChange} title="글씨체 (선택 영역에 적용)">
+          <option value="" disabled>글씨체</option>
+          {FONTS.map(f => <option key={f.label} value={f.value} style={{fontFamily: f.value}}>{f.label}</option>)}
+        </select>
+        <select className="toolbar-select" defaultValue="" onChange={handleSizeChange} title="크기 (선택 영역에 적용)">
+          <option value="" disabled>크기</option>
+          {SIZES.map(s => <option key={s.label} value={s.value}>{s.label}</option>)}
+        </select>
+        <span className="toolbar-sep"></span>
         <button className="toolbar-btn h1" onClick={() => handleHeading('h1')} title="큰 제목">H1</button>
         <button className="toolbar-btn h1" onClick={() => handleHeading('h2')} title="중제목">H2</button>
         <button className="toolbar-btn h1" onClick={() => handleHeading('h3')} title="소제목">H3</button>
