@@ -2214,39 +2214,69 @@ function RichEditor({ value, onChange, placeholder }) {
     document.execCommand('insertText', false, text);
   }
 
-  // Wrap selection in a span with custom style. If nothing selected, do nothing.
-  function applyInlineStyle(styleProp, value) {
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
-      // Nothing selected — focus and notify gently
-      ref.current.focus();
-      return;
-    }
-    const range = sel.getRangeAt(0);
-    // Make sure the selection is inside the editor
-    if (!ref.current.contains(range.commonAncestorContainer)) return;
-
-    const span = document.createElement('span');
-    span.style[styleProp] = value;
-    try {
-      const contents = range.extractContents();
-      span.appendChild(contents);
-      range.insertNode(span);
-      // Reselect inserted span
-      sel.removeAllRanges();
-      const newRange = document.createRange();
-      newRange.selectNodeContents(span);
-      sel.addRange(newRange);
-    } catch (e) {
-      // Fallback if selection crosses elements
-    }
+  // Apply font/size to selection. Uses execCommand with styleWithCSS so it
+  // produces span style="..." instead of <font> tag, and handles selections
+  // that span multiple block elements (paragraphs, headings, list items).
+  function applyInlineStyle(kind, value) {
+    if (!ref.current) return;
     ref.current.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    if (!ref.current.contains(sel.anchorNode)) return;
+
+    try { document.execCommand('styleWithCSS', false, true); } catch(e) {}
+
+    if (kind === 'fontFamily') {
+      // execCommand fontName uses CSS family due to styleWithCSS=true
+      try {
+        document.execCommand('fontName', false, value);
+      } catch(e) {}
+    } else if (kind === 'fontSize') {
+      // fontSize via execCommand only takes 1-7. Workaround: tag with size 7,
+      // then convert all elements with size="7" attr to actual style.
+      try {
+        document.execCommand('fontSize', false, '7');
+        const tags = ref.current.querySelectorAll('font[size="7"], span[style*="font-size: xxx-large"]');
+        tags.forEach(el => {
+          // Replace <font size=7> with span style fontSize=value
+          if (el.tagName === 'FONT') {
+            const span = document.createElement('span');
+            span.style.fontSize = value;
+            while (el.firstChild) span.appendChild(el.firstChild);
+            el.parentNode.replaceChild(span, el);
+          } else {
+            // span with xxx-large
+            el.style.fontSize = value;
+          }
+        });
+      } catch(e) {}
+    }
     handleInput();
+  }
+
+  // Save selection range when user clicks a dropdown (selects can lose focus)
+  const savedRange = useRef(null);
+  function saveSelection() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const r = sel.getRangeAt(0);
+      if (ref.current && ref.current.contains(r.commonAncestorContainer)) {
+        savedRange.current = r.cloneRange();
+      }
+    }
+  }
+  function restoreSelection() {
+    const sel = window.getSelection();
+    if (sel && savedRange.current) {
+      sel.removeAllRanges();
+      sel.addRange(savedRange.current);
+    }
   }
 
   function handleFontChange(e) {
     const v = e.target.value;
     if (!v) return;
+    restoreSelection();
     applyInlineStyle('fontFamily', v);
     e.target.value = '';
   }
@@ -2254,6 +2284,7 @@ function RichEditor({ value, onChange, placeholder }) {
   function handleSizeChange(e) {
     const v = e.target.value;
     if (!v) return;
+    restoreSelection();
     applyInlineStyle('fontSize', v);
     e.target.value = '';
   }
@@ -2277,11 +2308,23 @@ function RichEditor({ value, onChange, placeholder }) {
   return (
     <>
       <div className="editor-toolbar">
-        <select className="toolbar-select" defaultValue="" onChange={handleFontChange} title="글씨체 (선택 영역에 적용)">
+        <select
+          className="toolbar-select"
+          defaultValue=""
+          onMouseDown={saveSelection}
+          onChange={handleFontChange}
+          title="글씨체 (선택 영역에 적용)"
+        >
           <option value="" disabled>글씨체</option>
           {FONTS.map(f => <option key={f.label} value={f.value} style={{fontFamily: f.value}}>{f.label}</option>)}
         </select>
-        <select className="toolbar-select" defaultValue="" onChange={handleSizeChange} title="크기 (선택 영역에 적용)">
+        <select
+          className="toolbar-select"
+          defaultValue=""
+          onMouseDown={saveSelection}
+          onChange={handleSizeChange}
+          title="크기 (선택 영역에 적용)"
+        >
           <option value="" disabled>크기</option>
           {SIZES.map(s => <option key={s.label} value={s.value}>{s.label}</option>)}
         </select>
