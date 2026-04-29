@@ -1718,9 +1718,9 @@ const Store = {
         }
       }
       const newUpdatedAt = Date.now();
-      const toWrite = { ...data, _docUpdatedAt: newUpdatedAt };
-      // Don't store transient field
-      delete toWrite._docUpdatedAt; // remove first to ensure it's set fresh
+      // Strip any pre-existing _docUpdatedAt from data and apply fresh
+      const toWrite = { ...data };
+      delete toWrite._docUpdatedAt;
       toWrite._docUpdatedAt = newUpdatedAt;
       await DOC_REF.set(toWrite, { merge: false });
       showSync('동기화 완료');
@@ -1728,7 +1728,7 @@ const Store = {
     } catch(e) {
       if (e.code === 'conflict') throw e;
       console.error('save error', e);
-      alert('저장 실패: ' + (e.message || e));
+      alert('저장 실패: ' + (e.message || e) + '\n(이전 화면으로 되돌립니다.)');
       throw e;
     }
   },
@@ -2620,7 +2620,14 @@ function Detail({ item, sectionKey, data, onClose, onSave, onDelete, onToggleFav
   const [editing, setEditing] = useState(item._isNew || false);
   const [draft, setDraft] = useState(item);
 
-  useEffect(() => { setDraft(item); }, [item]);
+  // Reset draft when switching to a different item (different id), or when
+  // the item changes externally and we are NOT actively editing.
+  useEffect(() => {
+    setDraft(item);
+  }, [item.id]);
+  useEffect(() => {
+    if (!editing) setDraft(item);
+  }, [item, editing]);
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [item.id]);
@@ -3102,6 +3109,13 @@ function App() {
   // Tracks the _docUpdatedAt our local data is based on. Updated on load and
   // after every successful save. Used for optimistic concurrency check.
   const docUpdatedAtRef = useRef(0);
+  // Always-fresh reference to current data (avoids stale closure bugs).
+  const dataRef = useRef(null);
+  // Save queue: serializes saves so concurrent calls don't race.
+  const saveQueueRef = useRef(Promise.resolve());
+
+  // Keep dataRef in sync with state
+  useEffect(() => { dataRef.current = data; }, [data]);
 
   // Auth listener
   useEffect(() => {
@@ -3113,46 +3127,73 @@ function App() {
   useEffect(() => {
     Store.load().then(d => {
       docUpdatedAtRef.current = d._docUpdatedAt || 0;
+      dataRef.current = d;
       setData(d);
     }).catch(e => {
       alert('데이터 로드 실패: ' + (e.message || e));
-      setData(Store.defaultData());
+      const empty = Store.defaultData();
+      dataRef.current = empty;
+      setData(empty);
     });
   }, []);
 
-  // Save helper with conflict detection.
-  // - On conflict: alert user, refresh data from server, DO NOT apply local changes
-  // - On other error: alert and revert
-  // - On success: update docUpdatedAt to the new server timestamp
-  const persist = useCallback(async (next) => {
-    const prev = data;
-    const baseUpdatedAt = docUpdatedAtRef.current;
-    // Optimistic update
-    setData(next);
-    try {
-      const newUpdatedAt = await Store.save(next, baseUpdatedAt);
-      docUpdatedAtRef.current = newUpdatedAt;
-    } catch (e) {
-      if (e.code === 'conflict') {
-        // Revert local state and pull fresh
-        try {
-          const fresh = await Store.load();
-          docUpdatedAtRef.current = fresh._docUpdatedAt || 0;
-          setData(fresh);
-        } catch (e2) {
-          if (prev) setData(prev);
+  // Mutate data using a producer function. The producer receives the latest
+  // data (deep clone) and must return the next state. The whole operation is
+  // serialized via saveQueueRef so concurrent calls run in order.
+  // - On conflict: alert user, refresh from server, DO NOT apply local changes
+  // - On other error: revert and alert
+  // - On success: update docUpdatedAt and state
+  const mutate = useCallback(async (producer) => {
+    const run = async () => {
+      const current = dataRef.current;
+      if (!current) return;
+      const draft = JSON.parse(JSON.stringify(current));
+      // Strip the meta field before producer; we'll re-attach _docUpdatedAt at save time
+      delete draft._docUpdatedAt;
+      const next = producer(draft);
+      if (!next) return; // producer can cancel by returning null
+      const baseUpdatedAt = docUpdatedAtRef.current;
+      // Optimistic update
+      dataRef.current = next;
+      setData(next);
+      try {
+        const newUpdatedAt = await Store.save(next, baseUpdatedAt);
+        docUpdatedAtRef.current = newUpdatedAt;
+      } catch (e) {
+        if (e.code === 'conflict') {
+          // Pull fresh
+          try {
+            const fresh = await Store.load();
+            docUpdatedAtRef.current = fresh._docUpdatedAt || 0;
+            dataRef.current = fresh;
+            setData(fresh);
+          } catch (e2) {
+            // If reload fails, revert to prior
+            dataRef.current = current;
+            setData(current);
+          }
+          alert(
+            '⚠️ 다른 사람이 동시에 저장한 변경 사항이 있습니다.\n\n' +
+            '방금 입력하신 내용은 저장되지 않았습니다.\n' +
+            '최신 데이터로 새로고침했으니, 내용을 다시 작성해 주세요.'
+          );
+        } else {
+          // Generic error — revert
+          dataRef.current = current;
+          setData(current);
         }
-        alert(
-          '⚠️ 다른 사람이 동시에 저장한 변경 사항이 있습니다.\n\n' +
-          '방금 입력하신 내용은 저장되지 않았습니다.\n' +
-          '최신 데이터로 새로고침했으니, 내용을 다시 작성해 주세요.'
-        );
-      } else {
-        // Generic save error — revert
-        if (prev) setData(prev);
       }
-    }
-  }, [data]);
+    };
+    // Chain after any pending save to serialize
+    const next = saveQueueRef.current.then(run, run);
+    saveQueueRef.current = next;
+    return next;
+  }, []);
+
+  // Backward-compat: persist receives a fully-built next state. Convert to mutate-style.
+  const persist = useCallback(async (next) => {
+    return mutate(() => next);
+  }, [mutate]);
 
   // Derived: current section data + filtered items
   const currentSection = useMemo(() => getSectionMeta(activeSection), [activeSection]);
@@ -3284,14 +3325,20 @@ function App() {
   }
 
   async function saveHomeContent(homeContent) {
-    await persist({ ...data, homeContent });
+    await mutate(draft => {
+      draft.homeContent = homeContent;
+      return draft;
+    });
   }
 
   async function toggleFav(item) {
-    const favs = new Set(data.favorites || []);
-    if (favs.has(item.id)) favs.delete(item.id);
-    else favs.add(item.id);
-    await persist({ ...data, favorites: Array.from(favs) });
+    await mutate(draft => {
+      const favs = new Set(draft.favorites || []);
+      if (favs.has(item.id)) favs.delete(item.id);
+      else favs.add(item.id);
+      draft.favorites = Array.from(favs);
+      return draft;
+    });
   }
 
   async function saveItem(item) {
@@ -3301,18 +3348,18 @@ function App() {
     const clean = { ...item };
     delete clean._section;
     delete clean._isNew;
-    const next = JSON.parse(JSON.stringify(data));
-    const sec = next.sectionData[sectionKey];
-    sec.items = sec.items || [];
-    const idx = sec.items.findIndex(x => String(x.id) === String(clean.id));
-    if (idx >= 0) sec.items[idx] = clean;
-    else sec.items.push(clean);
     setEditingItem(null);
-    // Update detail item to reflect saved state (re-attach _section)
     if (detailItem && String(detailItem.id) === String(clean.id)) {
       setDetailItem({ ...clean, _section: sectionKey });
     }
-    await persist(next);
+    await mutate(draft => {
+      const sec = draft.sectionData[sectionKey];
+      sec.items = sec.items || [];
+      const idx = sec.items.findIndex(x => String(x.id) === String(clean.id));
+      if (idx >= 0) sec.items[idx] = clean;
+      else sec.items.push(clean);
+      return draft;
+    });
   }
 
   async function deleteItem(item) {
@@ -3323,17 +3370,22 @@ function App() {
       danger: true,
       onConfirm: async () => {
         setConfirm(null);
-        const next = JSON.parse(JSON.stringify(data));
-        const sec = next.sectionData[sectionKey];
-        const removed = (sec.items || []).find(x => String(x.id) === String(item.id));
-        sec.items = (sec.items || []).filter(x => String(x.id) !== String(item.id));
-        next.favorites = (next.favorites || []).filter(id => id !== item.id);
-        if (removed && removed.files) removed.files.forEach(f => Store.deleteFile(f));
         // Close detail if showing this item
         if (detailItem && String(detailItem.id) === String(item.id)) {
           setDetailItem(null);
         }
-        await persist(next);
+        // Files to delete (collected after we identify removed item from latest data)
+        let filesToCleanup = [];
+        await mutate(draft => {
+          const sec = draft.sectionData[sectionKey];
+          const removed = (sec.items || []).find(x => String(x.id) === String(item.id));
+          if (removed && removed.files) filesToCleanup = removed.files;
+          sec.items = (sec.items || []).filter(x => String(x.id) !== String(item.id));
+          draft.favorites = (draft.favorites || []).filter(id => id !== item.id);
+          return draft;
+        });
+        // Cleanup files in background (after data save succeeded)
+        filesToCleanup.forEach(f => Store.deleteFile(f));
       }
     });
   }
@@ -3341,31 +3393,34 @@ function App() {
   async function addSubCategory() {
     const name = prompt('새 분류 이름');
     if (!name) return;
-    const next = JSON.parse(JSON.stringify(data));
-    const sec = next.sectionData[activeSection];
-    sec.subCategories = sec.subCategories || [];
-    sec.subCategories.push({ id: uid(), name: name.trim() });
-    await persist(next);
+    await mutate(draft => {
+      const sec = draft.sectionData[activeSection];
+      sec.subCategories = sec.subCategories || [];
+      sec.subCategories.push({ id: uid(), name: name.trim() });
+      return draft;
+    });
   }
 
   async function saveSubCategory(updatedSub) {
-    const next = JSON.parse(JSON.stringify(data));
-    const sec = next.sectionData[activeSection];
-    sec.subCategories = (sec.subCategories || []).map(s =>
-      String(s.id) === String(updatedSub.id) ? { ...s, ...updatedSub } : s
-    );
-    await persist(next);
+    await mutate(draft => {
+      const sec = draft.sectionData[activeSection];
+      sec.subCategories = (sec.subCategories || []).map(s =>
+        String(s.id) === String(updatedSub.id) ? { ...s, ...updatedSub } : s
+      );
+      return draft;
+    });
   }
 
   async function renameSubCategory(sub) {
     const name = prompt('분류 이름 수정', sub.name);
     if (!name || name === sub.name) return;
-    const next = JSON.parse(JSON.stringify(data));
-    const sec = next.sectionData[activeSection];
-    sec.subCategories = sec.subCategories.map(s =>
-      String(s.id) === String(sub.id) ? { ...s, name: name.trim() } : s
-    );
-    await persist(next);
+    await mutate(draft => {
+      const sec = draft.sectionData[activeSection];
+      sec.subCategories = sec.subCategories.map(s =>
+        String(s.id) === String(sub.id) ? { ...s, name: name.trim() } : s
+      );
+      return draft;
+    });
   }
 
   async function deleteSubCategory(sub) {
@@ -3375,15 +3430,18 @@ function App() {
       danger: true,
       onConfirm: async () => {
         setConfirm(null);
-        const next = JSON.parse(JSON.stringify(data));
-        const sec = next.sectionData[activeSection];
-        const itemsToRemove = (sec.items || []).filter(x => String(x.subId) === String(sub.id));
-        itemsToRemove.forEach(it => (it.files || []).forEach(f => Store.deleteFile(f)));
-        const removeIds = new Set(itemsToRemove.map(x => x.id));
-        sec.items = (sec.items || []).filter(x => !removeIds.has(x.id));
-        sec.subCategories = (sec.subCategories || []).filter(s => String(s.id) !== String(sub.id));
-        next.favorites = (next.favorites || []).filter(id => !removeIds.has(id));
-        await persist(next);
+        let filesToCleanup = [];
+        await mutate(draft => {
+          const sec = draft.sectionData[activeSection];
+          const itemsToRemove = (sec.items || []).filter(x => String(x.subId) === String(sub.id));
+          itemsToRemove.forEach(it => (it.files || []).forEach(f => filesToCleanup.push(f)));
+          const removeIds = new Set(itemsToRemove.map(x => x.id));
+          sec.items = (sec.items || []).filter(x => !removeIds.has(x.id));
+          sec.subCategories = (sec.subCategories || []).filter(s => String(s.id) !== String(sub.id));
+          draft.favorites = (draft.favorites || []).filter(id => !removeIds.has(id));
+          return draft;
+        });
+        filesToCleanup.forEach(f => Store.deleteFile(f));
       }
     });
   }
@@ -3393,30 +3451,32 @@ function App() {
     if (!activeSubObj) { alert('먼저 2단계 분류를 선택하세요.'); return; }
     const name = prompt('새 하위 분류 이름 (예: 사진, 영상, 링크)');
     if (!name) return;
-    const next = JSON.parse(JSON.stringify(data));
-    const sec = next.sectionData[activeSection];
-    sec.subCategories = sec.subCategories.map(s => {
-      if (String(s.id) !== String(activeSubObj.id)) return s;
-      const subSubs = s.subSubCategories || [];
-      subSubs.push({ id: uid(), name: name.trim() });
-      return { ...s, subSubCategories: subSubs };
+    await mutate(draft => {
+      const sec = draft.sectionData[activeSection];
+      sec.subCategories = sec.subCategories.map(s => {
+        if (String(s.id) !== String(activeSubObj.id)) return s;
+        const subSubs = s.subSubCategories || [];
+        subSubs.push({ id: uid(), name: name.trim() });
+        return { ...s, subSubCategories: subSubs };
+      });
+      return draft;
     });
-    await persist(next);
   }
 
   async function renameSubSubCategory(subSub) {
     const name = prompt('하위 분류 이름 수정', subSub.name);
     if (!name || name === subSub.name) return;
-    const next = JSON.parse(JSON.stringify(data));
-    const sec = next.sectionData[activeSection];
-    sec.subCategories = sec.subCategories.map(s => {
-      if (String(s.id) !== String(activeSubObj.id)) return s;
-      const subSubs = (s.subSubCategories || []).map(ss =>
-        String(ss.id) === String(subSub.id) ? { ...ss, name: name.trim() } : ss
-      );
-      return { ...s, subSubCategories: subSubs };
+    await mutate(draft => {
+      const sec = draft.sectionData[activeSection];
+      sec.subCategories = sec.subCategories.map(s => {
+        if (String(s.id) !== String(activeSubObj.id)) return s;
+        const subSubs = (s.subSubCategories || []).map(ss =>
+          String(ss.id) === String(subSub.id) ? { ...ss, name: name.trim() } : ss
+        );
+        return { ...s, subSubCategories: subSubs };
+      });
+      return draft;
     });
-    await persist(next);
   }
 
   async function deleteSubSubCategory(subSub) {
@@ -3426,18 +3486,19 @@ function App() {
       danger: true,
       onConfirm: async () => {
         setConfirm(null);
-        const next = JSON.parse(JSON.stringify(data));
-        const sec = next.sectionData[activeSection];
-        sec.subCategories = sec.subCategories.map(s => {
-          if (String(s.id) !== String(activeSubObj.id)) return s;
-          const subSubs = (s.subSubCategories || []).filter(ss => String(ss.id) !== String(subSub.id));
-          return { ...s, subSubCategories: subSubs };
+        await mutate(draft => {
+          const sec = draft.sectionData[activeSection];
+          sec.subCategories = sec.subCategories.map(s => {
+            if (String(s.id) !== String(activeSubObj.id)) return s;
+            const subSubs = (s.subSubCategories || []).filter(ss => String(ss.id) !== String(subSub.id));
+            return { ...s, subSubCategories: subSubs };
+          });
+          // Clear subSubId from items that had it
+          sec.items = (sec.items || []).map(it =>
+            String(it.subSubId || '') === String(subSub.id) ? { ...it, subSubId: '' } : it
+          );
+          return draft;
         });
-        // Clear subSubId from items that had it
-        sec.items = (sec.items || []).map(it =>
-          String(it.subSubId || '') === String(subSub.id) ? { ...it, subSubId: '' } : it
-        );
-        await persist(next);
       }
     });
   }
@@ -3450,17 +3511,18 @@ function App() {
     if (subCategories.length === 0) {
       const name = prompt('첫 분류의 이름을 입력하세요\n(예: 편집디자인, 3D 애니메이션)');
       if (!name) return;
-      const next = JSON.parse(JSON.stringify(data));
-      const sec = next.sectionData[activeSection];
-      sec.subCategories = sec.subCategories || [];
-      const newSub = { id: uid(), name: name.trim() };
-      sec.subCategories.push(newSub);
-      await persist(next);
+      const newSubId = uid();
+      await mutate(draft => {
+        const sec = draft.sectionData[activeSection];
+        sec.subCategories = sec.subCategories || [];
+        sec.subCategories.push({ id: newSubId, name: name.trim() });
+        return draft;
+      });
       // proceed with this new sub selected
       const newItem = {
         id: uid(),
         _section: activeSection,
-        subId: newSub.id,
+        subId: newSubId,
         subSubId: activeSubSub !== 'all' ? activeSubSub : '',
         title: '',
         desc: '',
