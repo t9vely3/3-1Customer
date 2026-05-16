@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SBS ACADEMY · 상담 자료실.</title>
+  <title>SBS ACADEMY · 상담 자료실</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1570,27 +1570,14 @@ const ITEMS_COL = fbDb.collection('items');
 /* ============ Constants ============ */
 const SECTIONS = [
   { key: 'curriculum', name: '교육과정', sub: '커리큘럼 · 수강료 · 시간표' },
-  { key: 'portfolio',  name: '포트폴리오', sub: '졸업생 · 재학생 작품' },
-  { key: 'links',      name: '자료 모음', sub: '레퍼런스 · 도구 · 채용' },
   { key: 'seminar',    name: '세미나·특강', sub: '특강 다시보기 · 일정' },
   { key: 'trend',      name: '취업 트렌드', sub: '업계 동향 · 사례' },
   { key: 'promo',      name: '프로모션', sub: '할인 · 혜택' },
-  { key: 'mentor',     name: '멘토 소개', sub: '강사 · 전문가' },
   { key: 'favorites',  name: '즐겨찾기', sub: '자주 보여주는 자료', special: true }
 ];
 
 const SECTION_FIELDS = {
   curriculum: [
-    { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
-    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
-    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
-  ],
-  portfolio: [
-    { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
-    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
-    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
-  ],
-  links: [
     { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
     { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
     { key: 'desc', label: '한 줄 설명', type: 'textarea' }
@@ -1606,11 +1593,6 @@ const SECTION_FIELDS = {
     { key: 'desc', label: '한 줄 설명', type: 'textarea' }
   ],
   promo: [
-    { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
-    { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
-    { key: 'desc', label: '한 줄 설명', type: 'textarea' }
-  ],
-  mentor: [
     { key: 'title', label: '제목', type: 'text', required: true, isTitle: true },
     { key: 'videoUrl', label: '영상 링크', type: 'text', placeholder: 'YouTube URL 등' },
     { key: 'desc', label: '한 줄 설명', type: 'textarea' }
@@ -1877,8 +1859,6 @@ const Store = {
 
       // 2) Determine which items to upsert and which to delete
       const existingItemsSnap = await ITEMS_COL.get();
-      const existingIds = new Set();
-      existingItemsSnap.forEach(d => existingIds.add(d.id));
       const currentIds = new Set(allItems.map(it => String(it.id)));
 
       // Upsert each item; skip items that haven't changed (compare against existing)
@@ -1909,9 +1889,21 @@ const Store = {
         alert('⚠️ 다음 자료는 단일 자료가 1MB를 초과해 저장되지 않습니다.\n본문을 줄이거나 첨부 파일을 분리해 주세요.\n\n' + list);
       }
 
-      // 3) Delete items that no longer exist
+      // 3) Delete items that no longer exist.
+      //    Safety: only delete items that belong to a still-valid section.
+      //    Items from removed sections (e.g. old portfolio/links) are left
+      //    untouched so they aren't destroyed by a structure change.
+      const validSectionKeys = new Set(SECTIONS.filter(s => !s.special).map(s => s.key));
       const idsToDelete = [];
-      existingIds.forEach(id => { if (!currentIds.has(id)) idsToDelete.push(id); });
+      existingItemsSnap.forEach(d => {
+        const id = d.id;
+        if (currentIds.has(id)) return;
+        const itemSection = (d.data() && d.data()._section) || null;
+        // Only delete if it belongs to a section we still manage
+        if (itemSection && validSectionKeys.has(itemSection)) {
+          idsToDelete.push(id);
+        }
+      });
 
       console.log('[STORE] save: writing', itemsToWrite.length, 'items, deleting', idsToDelete.length);
 
