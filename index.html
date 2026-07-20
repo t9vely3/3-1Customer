@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SBS ACADEMY · 상담 자료실</title>
+  <title>AIX ACADEMY · 상담 자료실</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2098,48 +2098,89 @@
     .linkadd button:disabled { opacity: .4; cursor: default; }
     .board-chip.linktype::before { content: '⌁'; margin-right: 4px; opacity: .6; }
 
-    /* ---------- 사이드바 트리 계층 ---------- */
-    .nav-item.nav-sub {
-      margin-left: 24px;
-      padding-left: 14px;
-      border-left: 1px solid var(--line);
-      border-radius: 0 10px 10px 0;
-      font-size: 13.5px;
-      color: var(--muted);
-      opacity: 1;
+    /* ---------- 사이드바 트리 계층 (컨테인드 패널) ---------- */
+    .brand-row { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      flex: none;
+      width: 38px; height: 38px;
+      background: #101114;
+      color: #FAFAF8;
+      border-radius: 11px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800; letter-spacing: -.04em;
     }
-    .nav-item.nav-sub:hover { color: var(--ink); border-left-color: var(--line-strong); }
-    .nav-item.nav-sub.active {
-      background: var(--bg-soft);
+    .brand-mark { font-size: 19px; letter-spacing: -.02em; line-height: 1.1; }
+    .brand-mark b { font-weight: 800; color: var(--ink-strong); }
+    .brand-mark span { font-weight: 500; color: var(--muted); }
+    .brand-sub { margin-top: 4px; font-size: 8.5px; }
+
+    /* 섹션(1단계): 블랙 필 active — 기존 유지. 하위는 아래 패널 안으로 */
+    .nav-tree {
+      margin: 4px 2px 8px 14px;
+      padding: 8px;
+      background: var(--bg);
+      border: 1px solid var(--line-soft);
+      border-radius: 12px;
+      list-style: none;
+    }
+    /* 분류(2단계) */
+    .nav2 {
+      display: flex; align-items: center; gap: 7px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .nav2:hover { background: rgba(11,12,16,0.05); }
+    .nav2.active {
+      background: var(--bg-paper);
+      box-shadow: 0 1px 3px rgba(11,12,16,0.08);
       color: var(--ink-strong);
       font-weight: 700;
-      border-left: 2px solid var(--ink-strong);
-      padding-left: 13px;
     }
-    .nav-item.nav-subsub {
-      margin-left: 24px;
-      padding-left: 26px;
-      border-left: 1px solid var(--line);
-      border-radius: 0 10px 10px 0;
-      font-size: 12.5px;
-      color: var(--muted-2);
-      opacity: 1;
+    .nav2-caret {
+      flex: none; width: 10px;
+      font-size: 8px; color: var(--muted-2);
+    }
+    .nav2-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* 게시판(3단계): 엘보 커넥터 */
+    .nav3-group {
+      margin: 2px 0 6px 15px;
+      border-left: 1px solid var(--line-strong);
+      padding-left: 0;
+    }
+    .nav3 {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 8px 7px 14px;
+      font-size: 12px; font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
       position: relative;
+      border-radius: 0 8px 8px 0;
+      transition: color .15s, background .15s;
     }
-    .nav-item.nav-subsub::before {
+    .nav3::before {
       content: '';
-      position: absolute; left: 13px; top: 50%;
-      width: 7px; height: 1px;
+      position: absolute; left: 0; top: 50%;
+      width: 9px; height: 1px;
       background: var(--line-strong);
     }
-    .nav-item.nav-subsub:hover { color: var(--ink); }
-    .nav-item.nav-subsub.active {
-      background: transparent;
-      color: var(--ink-strong);
-      font-weight: 700;
-      border-left: 1px solid var(--line);
+    .nav3:hover { color: var(--ink); background: rgba(11,12,16,0.04); }
+    .nav3.active { color: var(--ink-strong); font-weight: 700; }
+    .nav3.active::before { background: var(--ink-strong); height: 2px; }
+    .nav3-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nav3-type {
+      flex: none;
+      font-size: 8px; font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--muted-2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 2px 5px;
     }
-    .nav-item.nav-subsub.active::before { background: var(--ink-strong); width: 10px; height: 2px; }
+    .nav3.active .nav3-type { color: var(--ink); border-color: var(--line-strong); }
 
     /* ---------- 문서형 소개 페이지 ---------- */
     .doc { max-width: 780px; }
@@ -2315,7 +2356,7 @@
 
   <!-- Loading -->
   <div id="loading">
-    <div class="loading-mark">SBS<span class="dot">·</span>Academy</div>
+    <div class="loading-mark"><b style="font-weight:800;font-style:normal">AIX</b><span style="opacity:.55;font-style:normal;font-weight:500">&nbsp;Academy</span></div>
     <div class="loading-bar"></div>
   </div>
 
@@ -2324,7 +2365,7 @@
     <div class="login-frame">
       <div class="login-eyebrow">Restricted Access</div>
       <h1 class="login-title">상담 <em>자료실</em></h1>
-      <p class="login-sub">SBS 아카데미 상담실 전용 페이지입니다.<br/>등록된 계정으로 로그인해 주세요.</p>
+      <p class="login-sub">AIX 아카데미 상담실 전용 페이지입니다.<br/>등록된 계정으로 로그인해 주세요.</p>
       <div class="login-field">
         <label>이메일</label>
         <input type="email" id="login-email" autocomplete="email" />
@@ -2597,7 +2638,7 @@ const Store = {
       titleLine2: '완성으로 가는 길',
       titleEm: '완성으로 가는 길',
       tagline: '영상 · 디자인 · 게임 · AI 분야의 모든 자료를 한 곳에.\n상담실 전용 큐레이션 라이브러리.',
-      meta: 'EST. SBS Academy · Computer Art'
+      meta: 'EST. AIX Academy · Computer Art'
     };
   },
   // In-memory shape used by the React app — same as before so UI doesn't change.
@@ -4433,6 +4474,7 @@ function Home({ data, sectionCounts, onSelectSection, editMode, onSaveHome, tota
     const src = editing ? draft : (data.homeContent || {});
     const out = { ...base };
     Object.keys(base).forEach(k => { if (src[k] != null && String(src[k]).trim() !== '') out[k] = src[k]; });
+    out.meta = String(out.meta || '').replace(/SBS/gi, 'AIX');
     if (editing) return { ...out, ...draft };
     return out;
   }, [editing, draft, data.homeContent]);
@@ -5176,8 +5218,13 @@ function App() {
         {/* SIDEBAR */}
         <aside className={'sidebar ' + (sidebarOpen ? 'open' : '')}>
           <div className="brand">
-            <div className="brand-mark">SBS<span className="amp"> · </span><em>Academy</em></div>
-            <div className="brand-sub">Consultation Library</div>
+            <div className="brand-row">
+              <span className="brand-logo">A.</span>
+              <div>
+                <div className="brand-mark"><b>AIX</b><span> Academy</span></div>
+                <div className="brand-sub">Consultation Library</div>
+              </div>
+            </div>
           </div>
 
           <div className="search-box">
@@ -5219,28 +5266,39 @@ function App() {
                     </span>
                     <span className="nav-count">{sectionCounts[s.key] || 0}</span>
                   </li>
-                  {showTree && subs.map(sub => {
-                    const isActiveSub = String(activeSub) === String(sub.id);
-                    const subSubs = sub.subSubCategories || [];
-                    return (
-                      <React.Fragment key={sub.id}>
-                        <li className={'nav-item nav-sub ' + (isActiveSub && activeSubSub === 'all' ? 'active' : '')}
-                            onClick={()=>navigateToSub(sub.id)}>
-                          <span className="nav-name">
-                            {isActiveSub && subSubs.length > 0 ? '▾ ' : ''}
-                            {sub.name}
-                          </span>
-                        </li>
-                        {isActiveSub && subSubs.map(ss => (
-                          <li key={ss.id}
-                              className={'nav-item nav-subsub ' + (String(activeSubSub) === String(ss.id) ? 'active' : '')}
-                              onClick={()=>navigateToSubSub(ss.id)}>
-                            <span className="nav-name">{ss.name}</span>
-                          </li>
-                        ))}
-                      </React.Fragment>
-                    );
-                  })}
+                  {showTree && (
+                    <li className="nav-tree">
+                      {subs.map(sub => {
+                        const isActiveSub = String(activeSub) === String(sub.id);
+                        const subSubs = sub.subSubCategories || [];
+                        return (
+                          <React.Fragment key={sub.id}>
+                            <div
+                              className={'nav2 ' + (isActiveSub && activeSubSub === 'all' ? 'active' : '') + (isActiveSub ? ' open' : '')}
+                              onClick={()=>navigateToSub(sub.id)}
+                            >
+                              <span className="nav2-caret">{subSubs.length > 0 ? (isActiveSub ? '▾' : '▸') : ''}</span>
+                              <span className="nav2-name">{sub.name}</span>
+                            </div>
+                            {isActiveSub && subSubs.length > 0 && (
+                              <div className="nav3-group">
+                                {subSubs.map(ss => (
+                                  <div
+                                    key={ss.id}
+                                    className={'nav3 ' + (String(activeSubSub) === String(ss.id) ? 'active' : '')}
+                                    onClick={()=>navigateToSubSub(ss.id)}
+                                  >
+                                    <span className="nav3-name">{ss.name}</span>
+                                    {ss.type === 'link' && <span className="nav3-type">링크</span>}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </li>
+                  )}
                 </React.Fragment>
               );
             })}
