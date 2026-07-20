@@ -1912,6 +1912,27 @@
       transform: translateY(-3px);
     }
     .card-thumb { aspect-ratio: 16 / 10; background: var(--bg-soft); }
+    /* 로고형 이미지: 블러 배경 위에 원본 비율로 작게 배치 */
+    .card-thumb.logo {
+      display: flex; align-items: center; justify-content: center;
+      background: #16171E;
+    }
+    .card-thumb.logo .thumb-bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: blur(28px) saturate(1.1) brightness(.75);
+      transform: scale(1.4);
+      opacity: .55;
+    }
+    .card-thumb.logo .thumb-main {
+      position: relative; z-index: 1;
+      width: auto; height: auto;
+      max-width: 52%; max-height: 58%;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+    }
     .card-fav {
       border-radius: 50%; width: 32px; height: 32px;
       box-shadow: 0 1px 4px rgba(11,12,16,0.12);
@@ -1939,6 +1960,24 @@
       color: var(--ink-strong);
       letter-spacing: -.01em;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .card-name.editable { cursor: text; }
+    .card-name.editable:hover {
+      background: var(--bg-soft);
+      border-radius: 6px;
+      box-shadow: 0 0 0 4px var(--bg-soft);
+    }
+    .card-name-input {
+      flex: 1; min-width: 0;
+      font-size: 13.5px; font-weight: 700;
+      font-family: var(--sans);
+      color: var(--ink-strong);
+      letter-spacing: -.01em;
+      background: var(--bg-elev);
+      border: 1.5px solid var(--ink-strong);
+      border-radius: 6px;
+      padding: 4px 8px;
+      outline: none;
     }
     .card-tag {
       flex: none;
@@ -2994,11 +3033,14 @@ function PdfPreview({ url }) {
 }
 
 /* Card */
-function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, editMode, subCatName, selectMode, selected, onToggleSelect }) {
+function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, onRename, isFav, editMode, subCatName, selectMode, selected, onToggleSelect }) {
+  const [nameDraft, setNameDraft] = useState(null); // null이면 표시 모드
+  const [thumbMode, setThumbMode] = useState('cover'); // 'cover' | 'logo'
   const baseThumb = pickThumb(item);
   const pdfFile = !baseThumb ? (item.files || []).find(f => isPdfFile(f.name) && f.directUrl) : null;
   const pdfThumb = usePdfThumb(pdfFile ? pdfFile.directUrl : null);
   const thumb = baseThumb || pdfThumb;
+  useEffect(() => { setThumbMode('cover'); }, [thumb]);
   const hasVideo = !!item.videoUrl || (item.files || []).some(f => isVideoFile(f.name));
   const isLink = !!item.linkUrl;
   const title = item.title || item.linkTitle || '제목 없음';
@@ -3010,20 +3052,29 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, 
   }
   return (
     <div className={'card' + (selectMode ? ' selectable' : '') + (selected ? ' selected' : '')} onClick={handleClick}>
-      <div className="card-thumb">
+      <div className={'card-thumb' + (thumbMode === 'logo' ? ' logo' : '')}>
         {selectMode && <span className="card-check">✓</span>}
         {thumb ? (
-          <img
-            src={thumb} alt="" loading="lazy"
-            onError={(e) => {
-              if (isLink && !e.target.dataset.retried) {
-                e.target.dataset.retried = '1';
-                e.target.src = `https://s0.wp.com/mshots/v1/${encodeURIComponent(item.linkUrl)}?w=800`;
-              } else {
-                e.target.style.display = 'none';
-              }
-            }}
-          />
+          <>
+            {thumbMode === 'logo' && <img className="thumb-bg" src={thumb} alt="" aria-hidden="true" />}
+            <img
+              className="thumb-main"
+              src={thumb} alt="" loading="lazy"
+              onLoad={(e) => {
+                const w = e.target.naturalWidth, h = e.target.naturalHeight;
+                // 정사각/세로형 로고나 저해상도 이미지는 크롭 대신 '로고 카드'로
+                if (w > 0 && h > 0 && (w < 420 || w / h < 1.35)) setThumbMode('logo');
+              }}
+              onError={(e) => {
+                if (isLink && !e.target.dataset.retried) {
+                  e.target.dataset.retried = '1';
+                  e.target.src = `https://s0.wp.com/mshots/v1/${encodeURIComponent(item.linkUrl)}?w=800`;
+                } else {
+                  e.target.style.display = 'none';
+                }
+              }}
+            />
+          </>
         ) : (
           <div className="card-ph" style={{ background: phGradient(title) }}>
             <span className="card-ph-title">{title}</span>
@@ -3066,7 +3117,32 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, 
             ? <img src={getFavicon(item.linkUrl)} alt="" onError={(e)=>{e.target.style.display='none';}} />
             : title.slice(0, 1)}
         </span>
-        <b className="card-name">{title}</b>
+        {nameDraft !== null ? (
+          <input
+            className="card-name-input"
+            autoFocus
+            value={nameDraft}
+            onChange={e => setNameDraft(e.target.value)}
+            onClick={e => e.stopPropagation()}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { e.target.blur(); }
+              if (e.key === 'Escape') { setNameDraft(null); }
+            }}
+            onBlur={() => {
+              const v = (nameDraft || '').trim();
+              if (v && v !== title && onRename) onRename(item, v);
+              setNameDraft(null);
+            }}
+          />
+        ) : (
+          <b
+            className={'card-name' + (editMode && !selectMode ? ' editable' : '')}
+            title={editMode && !selectMode ? '클릭해서 제목 수정' : undefined}
+            onClick={e => {
+              if (editMode && !selectMode) { e.stopPropagation(); setNameDraft(title); }
+            }}
+          >{title}</b>
+        )}
         <i className="card-tag">{TYPE_LABELS[itemType(item)]}</i>
         {editMode && (
           <span className="card-edit-actions">
@@ -3756,7 +3832,7 @@ function SubCategoryPage({
   subSubCategories,
   onAddSubSub, onRenameSubSub, onDeleteSubSub, onMoveBoardItems,
   onCardOpen, onToggleFav, isFavId,
-  onCardEdit, onCardDelete,
+  onCardEdit, onCardDelete, onCardRename,
   onNewItem, onQuickAddLink,
   onBulkMove, onBulkDelete,
   search
@@ -4003,6 +4079,7 @@ function SubCategoryPage({
                     isFav={isFavId(item.id)}
                     onEdit={(it)=>onCardEdit({...it, _section: sectionKey})}
                     onDelete={(it)=>onCardDelete({...it, _section: sectionKey})}
+                    onRename={(it, t)=>onCardRename({...it, _section: sectionKey}, t)}
                     editMode={editMode}
                     selectMode={selectMode}
                     selected={!!selected[item.id]}
@@ -5396,6 +5473,7 @@ function App() {
                             onToggleFav={toggleFav}
                             isFav={isFav(item.id)}
                             onEdit={(it)=>setDetailItem({...it, _section: sectionKey, _forceEdit: true})}
+                            onRename={(it, t)=>saveItem({ ...it, _section: sectionKey, title: t, updatedAt: Date.now() })}
                             onDelete={(it)=>deleteItem({...it, _section: sectionKey})}
                             editMode={editMode}
                           />
@@ -5425,6 +5503,7 @@ function App() {
                   onBulkDelete={bulkDelete}
                   onCardOpen={(it)=>setDetailItem(it)}
                   onCardEdit={(it)=>setDetailItem({...it, _forceEdit: true})}
+                  onCardRename={(it, t)=>saveItem({ ...it, title: t, updatedAt: Date.now() })}
                   onCardDelete={(it)=>deleteItem(it)}
                   onToggleFav={toggleFav}
                   isFavId={isFav}
