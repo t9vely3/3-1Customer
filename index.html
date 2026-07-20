@@ -75,7 +75,7 @@
       --text: var(--ink);
       --muted-light: var(--muted-2);
 
-      --serif: 'Noto Serif KR', 'Pretendard', serif;
+      --serif: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
@@ -1614,68 +1614,214 @@
       .subcat-landing { padding: 8px 24px 60px; }
     }
 
-    /* ---------- Home / Hero ---------- */
-    .home::before {
-      background: radial-gradient(circle at 50% 50%, rgba(63,63,184,0.05), transparent 62%);
-    }
-    .home-inner { padding: 40px 76px 110px; max-width: 1240px; margin: 0 auto; }
+    /* ---------- Home / Hero (Awwwards style) ---------- */
+    .home::before { content: none; }
+    .home-inner { padding: 36px 60px 120px; max-width: 1280px; margin: 0 auto; }
     .home-topbar {
-      margin-bottom: 96px;
-      font-size: 10px; letter-spacing: .3em;
+      margin-bottom: 70px;
+      font-size: 10px; letter-spacing: .26em;
       color: var(--muted-2);
-      border-bottom: 1px solid var(--line-soft);
-      padding-bottom: 20px;
+      border-bottom: none;
+      padding-bottom: 0;
     }
-    .home-hero { margin-bottom: 88px; max-width: 820px; }
+    .home-hero { margin: 0 auto 64px; max-width: 100%; text-align: center; }
     .home-eyebrow {
-      color: var(--muted); font-weight: 600;
-      letter-spacing: .34em; font-size: 10.5px;
-      margin-bottom: 26px;
-    }
-    .home-eyebrow::before { background: var(--ink-strong); width: 32px; }
-    .home-title {
-      font-family: var(--serif);
-      font-size: 64px; font-weight: 600; line-height: 1.24;
-      letter-spacing: -.025em;
-      word-break: keep-all;
-      margin-bottom: 26px;
-    }
-    .home-title em { color: var(--amber); font-weight: 600; }
-    .home-tagline { font-size: 15.5px; opacity: .62; margin-bottom: 40px; }
-
-    /* 히어로 하단 통합 스탯 스트립 */
-    .hero-stats {
-      display: inline-flex; align-items: center; gap: 22px;
-      padding: 14px 26px;
+      display: inline-flex; align-items: center;
+      justify-content: center;
+      font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--muted);
       background: var(--bg-paper);
       border: 1px solid var(--line-soft);
       border-radius: 999px;
-      box-shadow: var(--shadow-card);
+      padding: 7px 16px;
+      margin-bottom: 30px;
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(11,12,16,0.05);
     }
-    .hero-stats .hs {
-      font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
-      color: var(--muted);
-      display: inline-flex; align-items: baseline; gap: 8px;
-      white-space: nowrap;
-    }
-    .hero-stats .hs b {
-      font-size: 17px; font-weight: 700; letter-spacing: -.01em;
+    .home-eyebrow::before { content: none; }
+    .home-title {
+      font-family: var(--sans);
+      font-size: clamp(52px, 7.2vw, 96px);
+      font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -.045em;
       color: var(--ink-strong);
+      word-break: keep-all;
+      margin-bottom: 24px;
+    }
+    .home-title em { font-style: normal; color: var(--ink-strong); opacity: .32; }
+    .home-tagline {
+      font-size: 15px; color: var(--muted);
+      max-width: 460px; margin: 0 auto;
+      line-height: 1.7;
+      opacity: 1;
+    }
+
+    /* ---------- 다크 카테고리 카드 ---------- */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 72px;
+    }
+    .cat-card {
+      background: #101114;
+      border-radius: 12px;
+      padding: 26px 26px 22px;
+      min-height: 300px;
+      display: flex; flex-direction: column;
+      cursor: pointer;
+      transition: transform .25s, box-shadow .25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .cat-card:hover { transform: translateY(-5px); box-shadow: 0 20px 44px rgba(11,12,16,0.22); }
+    .cat-thumb {
+      height: 108px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 26px;
+    }
+    .cat-thumb img {
+      max-height: 104px; max-width: 78%;
+      border-radius: 6px;
+      object-fit: cover;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+    }
+    .cat-thumb-num {
+      font-size: 52px; font-weight: 800; letter-spacing: -.04em;
+      color: rgba(245,244,239,0.10);
+    }
+    .cat-label {
+      font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
+      color: #8FA8E8;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .cat-row {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .cat-name {
+      font-size: 26px; font-weight: 800; letter-spacing: -.025em;
+      line-height: 1.16;
+      color: #FAFAF8;
+      word-break: keep-all;
+    }
+    .cat-badge {
+      flex: none;
+      border: 1px solid rgba(250,250,248,0.22);
+      border-radius: 8px;
+      padding: 7px 12px 8px;
+      text-align: center;
+      line-height: 1.15;
+    }
+    .cat-badge span {
+      display: block;
+      font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(250,250,248,0.55);
+      margin-bottom: 2px;
+    }
+    .cat-badge b {
+      font-size: 16px; font-weight: 700;
+      color: #FAFAF8;
       font-variant-numeric: tabular-nums;
     }
-    .hero-stats .hs-div { width: 1px; height: 18px; background: var(--line); }
+    .cat-foot {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid rgba(250,250,248,0.10);
+      display: flex; justify-content: space-between; gap: 10px;
+      font-size: 10.5px;
+      color: rgba(250,250,248,0.5);
+      letter-spacing: .02em;
+    }
+    @media (max-width: 1100px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 620px)  { .cat-grid { grid-template-columns: 1fr; } .cat-card { min-height: 240px; } }
 
-    .home-section-label { color: var(--muted); letter-spacing: .28em; margin-bottom: 0; }
-    .home-section-label::before { background: var(--ink-strong); }
+    /* ---------- 디렉토리 테이블 (즐겨찾기 / 최근 자료) ---------- */
+    .dir-wrap { margin-top: 8px; }
+    .dir-head, .dir-row {
+      display: grid;
+      grid-template-columns: minmax(240px, 1.6fr) .7fr .8fr .7fr 88px;
+      align-items: center;
+      gap: 16px;
+      padding: 0 10px;
+    }
+    .dir-head {
+      padding-top: 6px; padding-bottom: 14px;
+    }
+    .dir-head .dh {
+      font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--amber);
+      font-weight: 600;
+    }
+    .dir-row {
+      padding-top: 20px; padding-bottom: 20px;
+      border-top: 1px solid var(--line-soft);
+      cursor: pointer;
+      transition: background .18s;
+    }
+    .dir-row:last-of-type { border-bottom: 1px solid var(--line-soft); }
+    .dir-row:hover { background: var(--bg-paper); }
+    .dir-row .dc { font-size: 13px; color: var(--muted); }
+    .dir-row .dc.name {
+      display: flex; align-items: center; gap: 12px;
+      min-width: 0;
+    }
+    .dir-row .dc.name b {
+      font-size: 13.5px; font-weight: 700; color: var(--ink-strong);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      border-bottom: 1px solid transparent;
+      transition: border-color .15s;
+    }
+    .dir-row:hover .dc.name b { border-bottom-color: var(--ink-strong); }
+    .dir-pro {
+      font-style: normal; font-size: 10px; color: var(--amber);
+      flex: none;
+    }
+    .dir-ava {
+      flex: none;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #101114;
+      color: #FAFAF8;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+      overflow: hidden;
+    }
+    .dir-ava img { width: 100%; height: 100%; object-fit: cover; }
+    .dir-row .dc.view { text-align: right; }
+    .dir-row .dc.view button {
+      background: var(--bg-paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 12px; font-weight: 600;
+      color: var(--ink);
+      transition: all .18s;
+    }
+    .dir-row .dc.view button:hover { background: var(--ink-strong); border-color: var(--ink-strong); color: #FAFAF8; }
+    .dir-foot {
+      text-align: center;
+      padding: 26px 0 0;
+      font-size: 12px; color: var(--muted);
+    }
+    .dir-foot b { color: var(--ink-strong); }
+    @media (max-width: 900px) {
+      .dir-head, .dir-row { grid-template-columns: 1fr auto 72px; }
+      .dir-head .dh:nth-child(2), .dir-head .dh:nth-child(3),
+      .dir-row .dc:nth-child(2), .dir-row .dc:nth-child(3) { display: none; }
+      .home-inner { padding: 28px 22px 80px; }
+    }
 
-    /* 에디토리얼 인덱스 리스트 — 카테고리 */
-    .index-list { margin-top: 28px; }
+    /* ---------- 인덱스 리스트 (분류 랜딩에서 사용) ---------- */
+    .index-list { margin-top: 20px; }
     .index-row {
       display: grid;
       grid-template-columns: 72px 220px 1fr auto 48px;
       align-items: center;
       gap: 20px;
-      padding: 30px 12px;
+      padding: 28px 12px;
       border-top: 1px solid var(--line);
       cursor: pointer;
       position: relative;
@@ -1683,13 +1829,14 @@
     }
     .index-row:last-child { border-bottom: 1px solid var(--line); }
     .index-row .ir-num {
-      font-family: var(--serif); font-style: italic;
-      font-size: 16px; color: var(--muted-2);
+      font-size: 13px; font-weight: 600;
+      color: var(--muted-2);
+      letter-spacing: .04em;
       transition: color .22s;
     }
     .index-row .ir-title {
-      font-family: var(--serif);
-      font-size: 26px; font-weight: 600; letter-spacing: -.02em;
+      font-family: var(--sans);
+      font-size: 24px; font-weight: 800; letter-spacing: -.03em;
       color: var(--ink-strong);
       transition: color .22s;
       word-break: keep-all;
@@ -1699,7 +1846,7 @@
       transition: color .22s;
     }
     .index-row .ir-count {
-      font-size: 20px; font-weight: 700; letter-spacing: -.01em;
+      font-size: 19px; font-weight: 700; letter-spacing: -.01em;
       color: var(--ink-strong);
       font-variant-numeric: tabular-nums;
       transition: color .22s;
@@ -1715,21 +1862,18 @@
       text-align: right;
       transition: transform .22s, color .22s;
     }
-    .index-row:hover { background: var(--ink-strong); padding-left: 26px; }
+    .index-row:hover { background: var(--ink-strong); padding-left: 26px; border-radius: 12px; }
+    .index-row:hover + .index-row { border-top-color: transparent; }
     .index-row:hover .ir-title,
     .index-row:hover .ir-count { color: #F5F4EF; }
     .index-row:hover .ir-num,
     .index-row:hover .ir-desc,
     .index-row:hover .ir-count i { color: rgba(245,244,239,0.55); }
     .index-row:hover .ir-arrow { color: #F5F4EF; transform: translateX(6px); }
-    .index-row.featured .ir-num { color: var(--amber); font-style: normal; }
-    .index-row.featured:hover .ir-num { color: var(--amber-soft); }
     @media (max-width: 900px) {
       .index-row { grid-template-columns: 44px 1fr auto 32px; }
       .index-row .ir-desc { display: none; }
-      .home-title { font-size: 42px; }
-      .home-inner { padding: 32px 28px 80px; }
-      .hero-stats { gap: 14px; padding: 12px 18px; }
+      .home-title { font-size: 44px; }
     }
 
     /* ---------- 분류 랜딩 카드 ---------- */
@@ -1902,8 +2046,15 @@
     .linkadd button:disabled { opacity: .4; cursor: default; }
     .board-chip.linktype::before { content: '⌁'; margin-right: 4px; opacity: .6; }
 
-    /* ---------- Empty state ---------- */
-    .empty-mark { color: var(--line); }
+    /* ---------- 타이포 통일 (볼드 산세리프) ---------- */
+    .header-title { font-family: var(--sans); font-weight: 800; letter-spacing: -.035em; }
+    .detail-title { font-family: var(--sans); font-weight: 800; letter-spacing: -.035em; }
+    .card-ph-title { font-family: var(--sans); font-weight: 700; font-size: 15.5px; letter-spacing: -.015em; }
+    .empty-title { font-family: var(--sans); font-weight: 700; font-style: normal; }
+    .empty-mark { color: var(--line); font-style: normal; }
+    .brand-mark { font-family: var(--sans); }
+    .brand-mark em { font-style: normal; font-weight: 800; }
+    .detail-eyebrow { font-weight: 600; }
 
   </style>
 </head>
@@ -3844,7 +3995,7 @@ function Confirm({ title, text, onConfirm, onCancel, danger }) {
 }
 
 /* ============ Home Page ============ */
-function Home({ data, sectionCounts, onSelectSection, editMode, onSaveHome, totalItems, totalFavs }) {
+function Home({ data, sectionCounts, onSelectSection, editMode, onSaveHome, totalItems, totalFavs, onOpenItem }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(data.homeContent);
 
@@ -3955,40 +4106,98 @@ function Home({ data, sectionCounts, onSelectSection, editMode, onSaveHome, tota
               <div className="home-eyebrow">{home.eyebrow}</div>
               <h1 className="home-title">{renderTitle()}</h1>
               <p className="home-tagline">{home.tagline}</p>
-              <div className="hero-stats">
-                <span className="hs"><b>{String(SECTIONS.filter(s=>!s.special).length).padStart(2,'0')}</b> Categories</span>
-                <span className="hs-div" />
-                <span className="hs"><b>{totalItems}</b> Materials</span>
-                <span className="hs-div" />
-                <span className="hs"><b>★ {totalFavs}</b> Pinned</span>
-              </div>
             </>
           )}
         </div>
 
-        {/* SECTION INDEX — 에디토리얼 인덱스 리스트 */}
-        <div className="home-section-label">Browse Categories</div>
-        <div className="index-list">
-          {SECTIONS.map((s, i) => {
+        {/* FEATURED — 다크 카테고리 카드 */}
+        <div className="cat-grid">
+          {SECTIONS.filter(s => !s.special).map((s, i) => {
             const count = sectionCounts[s.key] || 0;
-            const isFeatured = s.special;
+            const secItems = ((data.sectionData[s.key] || {}).items || []);
+            const thumbItem = [...secItems]
+              .sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0))
+              .find(it => pickThumb(it));
+            const thumb = thumbItem ? pickThumb(thumbItem) : null;
+            const subCnt = ((data.sectionData[s.key] || {}).subCategories || []).length;
             return (
-              <div
-                key={s.key}
-                className={'index-row' + (isFeatured ? ' featured' : '')}
-                onClick={()=>onSelectSection(s.key)}
-              >
-                <span className="ir-num">
-                  {s.special ? '★' : String(SECTIONS.filter(x=>!x.special).indexOf(s)+1).padStart(2,'0')}
-                </span>
-                <span className="ir-title">{s.name}</span>
-                <span className="ir-desc">{s.sub}</span>
-                <span className="ir-count">{count}<i>건</i></span>
-                <span className="ir-arrow">→</span>
+              <div key={s.key} className="cat-card" onClick={()=>onSelectSection(s.key)}>
+                <div className="cat-thumb">
+                  {thumb
+                    ? <img src={thumb} alt="" loading="lazy" onError={(e)=>{e.target.style.display='none';}} />
+                    : <span className="cat-thumb-num">{String(i+1).padStart(2,'0')}</span>}
+                </div>
+                <div className="cat-label">Category {String(i+1).padStart(2,'0')}</div>
+                <div className="cat-row">
+                  <div className="cat-name">{s.name}</div>
+                  <div className="cat-badge"><span>자료</span><b>{count}</b></div>
+                </div>
+                <div className="cat-foot">
+                  <span>{s.sub}</span>
+                  <span>{subCnt > 0 ? `${subCnt} 분류` : '—'}</span>
+                </div>
               </div>
             );
           })}
         </div>
+
+        {/* DIRECTORY — 즐겨찾기 / 최근 자료 테이블 */}
+        {(() => {
+          const withSection = [];
+          SECTIONS.forEach(s => {
+            if (s.special) return;
+            const sec = data.sectionData[s.key] || {};
+            (sec.items || []).forEach(it => {
+              const sub = (sec.subCategories || []).find(x => String(x.id) === String(it.subId));
+              withSection.push({ ...it, _section: s.key, _sectionName: s.name, _subName: sub ? sub.name : '' });
+            });
+          });
+          const favIds = data.favorites || [];
+          const favItems = withSection.filter(it => favIds.includes(it.id));
+          const isPinned = favItems.length > 0;
+          const rows = (isPinned
+            ? favItems
+            : [...withSection].sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0))
+          ).slice(0, 8);
+          if (rows.length === 0) return null;
+          return (
+            <div className="dir-wrap">
+              <div className="dir-head">
+                <span className="dh name">Name</span>
+                <span className="dh">Category</span>
+                <span className="dh">Board</span>
+                <span className="dh">Date</span>
+                <span className="dh"></span>
+              </div>
+              {rows.map(it => {
+                const t = pickThumb(it);
+                const title = it.title || it.linkTitle || '제목 없음';
+                return (
+                  <div key={it.id} className="dir-row" onClick={()=>onOpenItem(it)}>
+                    <span className="dc name">
+                      <span className="dir-ava">
+                        {t
+                          ? <img src={t} alt="" loading="lazy" onError={(e)=>{e.target.style.display='none';}} />
+                          : title.slice(0,1)}
+                      </span>
+                      <b>{title}</b>
+                      {isPinned && <i className="dir-pro">★</i>}
+                    </span>
+                    <span className="dc">{it._sectionName}</span>
+                    <span className="dc">{it._subName || '—'}</span>
+                    <span className="dc">{fmtDate(it.updatedAt || it.createdAt)}</span>
+                    <span className="dc view"><button onClick={(e)=>{e.stopPropagation(); onOpenItem(it);}}>View</button></span>
+                  </div>
+                );
+              })}
+              <div className="dir-foot">
+                {isPinned
+                  ? <>자주 보여주는 자료 <b>{favItems.length}건</b>이 고정되어 있습니다</>
+                  : <>총 <b>{totalItems}건</b>의 자료가 등록되어 있습니다</>}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
@@ -4629,6 +4838,7 @@ function App() {
               onSaveHome={saveHomeContent}
               totalItems={totalItems}
               totalFavs={totalFavs}
+              onOpenItem={(it)=>{ selectSection(it._section); setDetailItem(it); }}
             />
           ) : (
             <>
