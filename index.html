@@ -1933,6 +1933,27 @@
       border-radius: 12px;
       box-shadow: 0 10px 28px rgba(0,0,0,0.4);
     }
+    /* 와이드 저해상도: 크롭·확대 대신 블러 배경 위 레터박스 */
+    .card-thumb.fit {
+      display: flex; align-items: center; justify-content: center;
+      background: #16171E;
+    }
+    .card-thumb.fit .thumb-bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: blur(28px) saturate(1.05) brightness(.7);
+      transform: scale(1.4);
+      opacity: .5;
+    }
+    .card-thumb.fit .thumb-main {
+      position: relative; z-index: 1;
+      width: auto; height: auto;
+      max-width: 90%; max-height: 84%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.38);
+    }
     .card-fav {
       border-radius: 50%; width: 32px; height: 32px;
       box-shadow: 0 1px 4px rgba(11,12,16,0.12);
@@ -2563,7 +2584,17 @@ function usePdfThumb(url) {
     let dead = false;
     (async () => {
       try {
-        const pdf = await pdfjsLib.getDocument({ url }).promise;
+        // 전체 바이트를 먼저 받아서 렌더 (range/stream 이슈 회피 — 가장 견고)
+        let pdf;
+        try {
+          const resp = await fetch(url, { mode: 'cors' });
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const buf = await resp.arrayBuffer();
+          pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        } catch(fetchErr) {
+          // 폴백: URL 직접 로드
+          pdf = await pdfjsLib.getDocument({ url, withCredentials: false, disableRange: true, disableStream: true }).promise;
+        }
         const page = await pdf.getPage(1);
         const vp1 = page.getViewport({ scale: 1 });
         const scale = Math.min(2, 560 / vp1.width);
@@ -2578,7 +2609,7 @@ function usePdfThumb(url) {
         __pdfThumbCache[url] = dataUrl;
         if (!dead) setSrc(dataUrl);
         try { pdf.destroy(); } catch(e) {}
-      } catch(e) { /* CORS·손상 파일 등 — 타일 유지 */ }
+      } catch(e) { console.warn('[PDF썸네일] 렌더 실패:', url, e && e.message); }
     })();
     return () => { dead = true; };
   }, [url]);
@@ -3052,18 +3083,20 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, onRenam
   }
   return (
     <div className={'card' + (selectMode ? ' selectable' : '') + (selected ? ' selected' : '')} onClick={handleClick}>
-      <div className={'card-thumb' + (thumbMode === 'logo' ? ' logo' : '')}>
+      <div className={'card-thumb' + (thumbMode === 'logo' ? ' logo' : '') + (thumbMode === 'fit' ? ' fit' : '')}>
         {selectMode && <span className="card-check">✓</span>}
         {thumb ? (
           <>
-            {thumbMode === 'logo' && <img className="thumb-bg" src={thumb} alt="" aria-hidden="true" />}
+            {(thumbMode === 'logo' || thumbMode === 'fit') && <img className="thumb-bg" src={thumb} alt="" aria-hidden="true" />}
             <img
               className="thumb-main"
               src={thumb} alt="" loading="lazy"
               onLoad={(e) => {
                 const w = e.target.naturalWidth, h = e.target.naturalHeight;
-                // 정사각/세로형 로고나 저해상도 이미지는 크롭 대신 '로고 카드'로
-                if (w > 0 && h > 0 && (w < 420 || w / h < 1.35)) setThumbMode('logo');
+                if (!(w > 0 && h > 0)) return;
+                // 정사각/세로형 → 로고 카드, 와이드지만 저해상도 → 레터박스(fit)
+                if (w / h < 1.35 || (w < 380 && h < 380)) setThumbMode('logo');
+                else if (w < 640) setThumbMode('fit');
               }}
               onError={(e) => {
                 if (isLink && !e.target.dataset.retried) {
