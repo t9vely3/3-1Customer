@@ -2076,6 +2076,16 @@
       padding: 8px 0;
     }
     .linkadd input::placeholder { color: var(--muted-2); }
+    .linkadd input.linkadd-title {
+      flex: none; width: 210px;
+      border-left: 1px solid var(--line);
+      border-radius: 0;
+      padding-left: 14px;
+    }
+    @media (max-width: 700px) {
+      .linkadd { flex-wrap: wrap; border-radius: var(--radius); }
+      .linkadd input.linkadd-title { flex: 1; width: auto; border-left: none; padding-left: 0; }
+    }
     .linkadd button {
       flex: none;
       background: var(--ink-strong); color: #fff;
@@ -2087,6 +2097,207 @@
     .linkadd button:hover { opacity: .85; }
     .linkadd button:disabled { opacity: .4; cursor: default; }
     .board-chip.linktype::before { content: '⌁'; margin-right: 4px; opacity: .6; }
+
+    /* ---------- 사이드바 트리 계층 ---------- */
+    .nav-item.nav-sub {
+      margin-left: 24px;
+      padding-left: 14px;
+      border-left: 1px solid var(--line);
+      border-radius: 0 10px 10px 0;
+      font-size: 13.5px;
+      color: var(--muted);
+      opacity: 1;
+    }
+    .nav-item.nav-sub:hover { color: var(--ink); border-left-color: var(--line-strong); }
+    .nav-item.nav-sub.active {
+      background: var(--bg-soft);
+      color: var(--ink-strong);
+      font-weight: 700;
+      border-left: 2px solid var(--ink-strong);
+      padding-left: 13px;
+    }
+    .nav-item.nav-subsub {
+      margin-left: 24px;
+      padding-left: 26px;
+      border-left: 1px solid var(--line);
+      border-radius: 0 10px 10px 0;
+      font-size: 12.5px;
+      color: var(--muted-2);
+      opacity: 1;
+      position: relative;
+    }
+    .nav-item.nav-subsub::before {
+      content: '';
+      position: absolute; left: 13px; top: 50%;
+      width: 7px; height: 1px;
+      background: var(--line-strong);
+    }
+    .nav-item.nav-subsub:hover { color: var(--ink); }
+    .nav-item.nav-subsub.active {
+      background: transparent;
+      color: var(--ink-strong);
+      font-weight: 700;
+      border-left: 1px solid var(--line);
+    }
+    .nav-item.nav-subsub.active::before { background: var(--ink-strong); width: 10px; height: 2px; }
+
+    /* ---------- 문서형 소개 페이지 ---------- */
+    .doc { max-width: 780px; }
+    .doc .detail-title { margin-bottom: 6px; }
+    .doc-lead {
+      font-size: 17px; line-height: 1.65;
+      color: var(--muted);
+      margin: 14px 0 10px;
+      padding-bottom: 26px;
+      border-bottom: 1px solid var(--line);
+      word-break: keep-all;
+    }
+    .doc-lead-input {
+      width: 100%;
+      font-size: 16px;
+      padding: 12px 14px;
+      margin: 14px 0 10px;
+      background: var(--bg-elev);
+      border: 1px dashed var(--line-strong);
+      color: var(--ink);
+      outline: none;
+    }
+    .doc .body-readonly { font-size: 15px; line-height: 1.85; color: var(--ink); }
+    .doc .body-readonly > p:first-child {
+      font-size: 16.5px; line-height: 1.8; color: var(--ink-strong);
+    }
+    .doc .body-readonly h1,
+    .doc .body-readonly h2 {
+      font-size: 19px; font-weight: 800; letter-spacing: -.02em;
+      margin: 44px 0 16px; padding-top: 26px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-strong);
+    }
+    .doc .body-readonly h1:first-child,
+    .doc .body-readonly h2:first-child { border-top: none; padding-top: 0; margin-top: 24px; }
+    .doc .body-readonly h3 { font-size: 15.5px; font-weight: 700; margin: 26px 0 10px; }
+    .doc .body-readonly ul, .doc .body-readonly ol { padding-left: 4px; margin: 0 0 18px; list-style: none; }
+    .doc .body-readonly li {
+      position: relative;
+      padding: 7px 0 7px 22px;
+      margin: 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .doc .body-readonly li:last-child { border-bottom: none; }
+    .doc .body-readonly li::before {
+      content: '';
+      position: absolute; left: 4px; top: 17px;
+      width: 8px; height: 1.5px;
+      background: var(--amber);
+    }
+
+    /* ---------- 카드 선택 모드 ---------- */
+    .card.selectable { cursor: pointer; }
+    .card.selected {
+      border-color: var(--ink-strong);
+      box-shadow: 0 0 0 2px var(--ink-strong), 0 10px 28px rgba(11,12,16,0.10);
+    }
+    .card-check {
+      position: absolute; top: 8px; left: 8px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(255,255,255,0.94);
+      border: 1.5px solid var(--line-strong);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+      color: transparent;
+      transition: all .15s;
+      z-index: 2;
+    }
+    .card.selected .card-check {
+      background: var(--ink-strong);
+      border-color: var(--ink-strong);
+      color: #FAFAF8;
+    }
+
+    /* ---------- 하단 선택 액션 바 ---------- */
+    .selbar {
+      position: fixed;
+      left: 50%; bottom: 28px;
+      transform: translateX(-50%);
+      background: #101114;
+      color: #FAFAF8;
+      border-radius: 999px;
+      padding: 10px 12px 10px 22px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: 0 16px 40px rgba(11,12,16,0.35);
+      z-index: 300;
+    }
+    .selbar .sb-count { font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .selbar button {
+      border: none; border-radius: 999px;
+      padding: 9px 18px;
+      font-size: 12.5px; font-weight: 600;
+      background: rgba(250,250,248,0.12);
+      color: #FAFAF8;
+      transition: background .15s;
+    }
+    .selbar button:hover { background: rgba(250,250,248,0.22); }
+    .selbar button.primary { background: #FAFAF8; color: #101114; }
+    .selbar button.danger:hover { background: var(--rose); }
+
+    /* ---------- 이동 대상 피커 / 게시판 액션 시트 ---------- */
+    .picker-overlay {
+      position: fixed; inset: 0;
+      background: rgba(11,12,16,0.45);
+      backdrop-filter: blur(2px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 400;
+      padding: 24px;
+    }
+    .picker {
+      background: var(--bg-paper);
+      border-radius: 16px;
+      width: 100%; max-width: 440px;
+      max-height: 78vh;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(11,12,16,0.3);
+    }
+    .picker-head {
+      padding: 20px 22px 14px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .picker-title { font-size: 16px; font-weight: 800; letter-spacing: -.02em; color: var(--ink-strong); }
+    .picker-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .picker-list { overflow-y: auto; padding: 8px 10px 12px; }
+    .picker-group {
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: .16em; text-transform: uppercase;
+      color: var(--muted-2);
+      padding: 14px 12px 6px;
+    }
+    .picker-row {
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      background: transparent; border: none;
+      border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      color: var(--ink);
+      text-align: left;
+      transition: background .15s;
+    }
+    .picker-row:hover { background: var(--bg-soft); }
+    .picker-row .pr-type { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-2); }
+    .picker-row.danger { color: var(--rose); }
+    .picker-foot {
+      padding: 12px 22px;
+      border-top: 1px solid var(--line-soft);
+      display: flex; justify-content: flex-end;
+    }
+    .picker-foot button {
+      background: transparent; border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 9px 20px;
+      font-size: 13px; font-weight: 600; color: var(--ink);
+    }
+    .picker-foot button:hover { border-color: var(--ink-strong); }
 
     /* ---------- 타이포 통일 (볼드 산세리프) ---------- */
     .header-title { font-family: var(--sans); font-weight: 800; letter-spacing: -.035em; }
@@ -2261,6 +2472,38 @@ function itemType(it) {
   return 'doc';
 }
 const TYPE_LABELS = { all: '전체', video: '영상', photo: '사진', link: '링크', doc: '문서' };
+/* PDF 첫 페이지 → 썸네일 (세션 캐시) */
+const __pdfThumbCache = {};
+function usePdfThumb(url) {
+  const [src, setSrc] = useState(url ? (__pdfThumbCache[url] || null) : null);
+  useEffect(() => {
+    if (!url) { setSrc(null); return; }
+    if (__pdfThumbCache[url]) { setSrc(__pdfThumbCache[url]); return; }
+    if (!window.pdfjsLib) return;
+    let dead = false;
+    (async () => {
+      try {
+        const pdf = await pdfjsLib.getDocument({ url }).promise;
+        const page = await pdf.getPage(1);
+        const vp1 = page.getViewport({ scale: 1 });
+        const scale = Math.min(2, 560 / vp1.width);
+        const vp = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = vp.width; canvas.height = vp.height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        __pdfThumbCache[url] = dataUrl;
+        if (!dead) setSrc(dataUrl);
+        try { pdf.destroy(); } catch(e) {}
+      } catch(e) { /* CORS·손상 파일 등 — 타일 유지 */ }
+    })();
+    return () => { dead = true; };
+  }, [url]);
+  return src;
+}
 /* 링크 메타데이터 가져오기 — 저장 시 1회만 호출해 아이템에 캐시.
    순서: YouTube 직행 → microlink → allorigins → corsproxy → 스크린샷 폴백.
    어떤 경우에도 도메인/스크린샷으로 최소한의 미리보기를 보장. */
@@ -2710,19 +2953,24 @@ function PdfPreview({ url }) {
 }
 
 /* Card */
-function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, editMode, subCatName }) {
-  const thumb = pickThumb(item);
+function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, editMode, subCatName, selectMode, selected, onToggleSelect }) {
+  const baseThumb = pickThumb(item);
+  const pdfFile = !baseThumb ? (item.files || []).find(f => isPdfFile(f.name) && f.directUrl) : null;
+  const pdfThumb = usePdfThumb(pdfFile ? pdfFile.directUrl : null);
+  const thumb = baseThumb || pdfThumb;
   const hasVideo = !!item.videoUrl || (item.files || []).some(f => isVideoFile(f.name));
   const isLink = !!item.linkUrl;
   const title = item.title || item.linkTitle || '제목 없음';
   function handleClick() {
+    if (selectMode) { onToggleSelect(item); return; }
     // 링크 자료는 바로 새 탭으로 (편집 모드에서는 상세로)
     if (isLink && !editMode) { window.open(item.linkUrl, '_blank', 'noopener,noreferrer'); return; }
     onOpen(item);
   }
   return (
-    <div className="card" onClick={handleClick}>
+    <div className={'card' + (selectMode ? ' selectable' : '') + (selected ? ' selected' : '')} onClick={handleClick}>
       <div className="card-thumb">
+        {selectMode && <span className="card-check">✓</span>}
         {thumb ? (
           <img
             src={thumb} alt="" loading="lazy"
@@ -3354,23 +3602,82 @@ function RichEditor({ value, onChange, placeholder }) {
   );
 }
 
+/* ============ 이동 대상 피커 모달 ============ */
+function MovePickerModal({ title, subtitle, targets, onPick, onClose }) {
+  // targets: [{ subId, subName, boardId, boardName, type }]
+  const groups = {};
+  targets.forEach(t => {
+    if (!groups[t.subId]) groups[t.subId] = { name: t.subName, rows: [] };
+    groups[t.subId].rows.push(t);
+  });
+  return (
+    <div className="picker-overlay" onClick={onClose}>
+      <div className="picker" onClick={e => e.stopPropagation()}>
+        <div className="picker-head">
+          <div className="picker-title">{title}</div>
+          {subtitle && <div className="picker-sub">{subtitle}</div>}
+        </div>
+        <div className="picker-list">
+          {targets.length === 0 && (
+            <div style={{padding: '24px 14px', fontSize: 13, color: 'var(--muted)'}}>
+              이동할 수 있는 다른 게시판이 없습니다. 먼저 게시판을 만들어 주세요.
+            </div>
+          )}
+          {Object.keys(groups).map(gid => (
+            <React.Fragment key={gid}>
+              <div className="picker-group">{groups[gid].name}</div>
+              {groups[gid].rows.map(t => (
+                <button key={t.boardId} className="picker-row" onClick={() => onPick(t)}>
+                  <span>{t.boardName}</span>
+                  <span className="pr-type">{t.type === 'link' ? '링크' : '일반'}</span>
+                </button>
+              ))}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="picker-foot"><button onClick={onClose}>취소</button></div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 게시판 액션 시트 ============ */
+function BoardActionSheet({ board, onRename, onMoveAll, onDelete, onClose }) {
+  return (
+    <div className="picker-overlay" onClick={onClose}>
+      <div className="picker" style={{maxWidth: 360}} onClick={e => e.stopPropagation()}>
+        <div className="picker-head">
+          <div className="picker-title">"{board.name}" 게시판</div>
+        </div>
+        <div className="picker-list" style={{padding: '10px'}}>
+          <button className="picker-row" onClick={() => { onClose(); onRename(); }}>이름 변경</button>
+          <button className="picker-row" onClick={() => { onClose(); onMoveAll(); }}>자료 전체를 다른 게시판으로 이동</button>
+          <button className="picker-row danger" onClick={() => { onClose(); onDelete(); }}>게시판 삭제</button>
+        </div>
+        <div className="picker-foot"><button onClick={onClose}>닫기</button></div>
+      </div>
+    </div>
+  );
+}
+
 /* ============ Link Quick Add (링크 게시판 전용) ============ */
 function LinkQuickAdd({ onAdd }) {
   const [url, setUrl] = useState('');
+  const [title, setTitle] = useState('');
   const [busy, setBusy] = useState(false);
   async function submit() {
     let u = url.trim();
     if (!u) return;
     if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
     setBusy(true);
+    const custom = title.trim();
     try {
       const preview = await fetchLinkPreview(u);
-      onAdd(preview);
-      setUrl('');
+      onAdd({ ...preview, customTitle: custom });
+      setUrl(''); setTitle('');
     } catch(e) {
-      alert('미리보기를 가져오지 못했습니다. 링크는 저장됩니다.');
-      onAdd({ linkUrl: u, linkDomain: getDomain(u), linkTitle: '', linkDesc: '', linkImage: '' });
-      setUrl('');
+      onAdd({ linkUrl: u, linkDomain: getDomain(u), linkTitle: '', linkDesc: '', linkImage: '', customTitle: custom });
+      setUrl(''); setTitle('');
     } finally { setBusy(false); }
   }
   return (
@@ -3380,7 +3687,15 @@ function LinkQuickAdd({ onAdd }) {
         value={url}
         onChange={e=>setUrl(e.target.value)}
         onKeyDown={e=>{ if(e.key==='Enter') submit(); }}
-        placeholder="링크(URL)를 붙여넣으면 미리보기와 함께 자동 등록됩니다"
+        placeholder="링크(URL) 붙여넣기"
+        disabled={busy}
+      />
+      <input
+        className="linkadd-title"
+        value={title}
+        onChange={e=>setTitle(e.target.value)}
+        onKeyDown={e=>{ if(e.key==='Enter') submit(); }}
+        placeholder="제목 (비우면 자동)"
         disabled={busy}
       />
       <button onClick={submit} disabled={busy}>{busy ? '가져오는 중…' : '+ 링크 추가'}</button>
@@ -3402,6 +3717,7 @@ function SubCategoryPage({
   onCardOpen, onToggleFav, isFavId,
   onCardEdit, onCardDelete,
   onNewItem, onQuickAddLink,
+  onBulkMove, onBulkDelete,
   search
 }) {
   const [editing, setEditing] = useState(false);
@@ -3419,6 +3735,22 @@ function SubCategoryPage({
   /* 게시판 내 콘텐츠 타입 탭 (전체/영상/사진/링크) */
   const [typeFilter, setTypeFilter] = useState('all');
   useEffect(() => { setTypeFilter('all'); }, [activeSubSub]);
+
+  /* 선택 모드 (일괄 이동/삭제) */
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState({});
+  const [boardMenuOpen, setBoardMenuOpen] = useState(false);
+  useEffect(() => { setSelectMode(false); setSelected({}); setBoardMenuOpen(false); }, [activeSubSub]);
+  useEffect(() => { if (!editMode) { setSelectMode(false); setSelected({}); } }, [editMode]);
+  const selectedIds = Object.keys(selected).filter(k => selected[k]);
+  function toggleSelect(item) {
+    setSelected(prev => ({ ...prev, [item.id]: !prev[item.id] }));
+  }
+  function selectAll() {
+    const next = {};
+    filtered.forEach(it => { next[it.id] = true; });
+    setSelected(next);
+  }
 
   const boardItems = useMemo(() => {
     if (isOverview) return [];
@@ -3485,19 +3817,17 @@ function SubCategoryPage({
           {isOverview && editMode && !editing && (
             <button className="detail-btn danger" onClick={() => onDelete(sub)}>분류 삭제</button>
           )}
-          {!isOverview && editMode && (
+          {!isOverview && editMode && !selectMode && (
             <button className="detail-btn amber" onClick={onNewItem}>+ 새 자료</button>
           )}
-          {!isOverview && editMode && (
+          {!isOverview && editMode && boardItems.length > 0 && (
             <button
-              className="detail-btn"
-              onClick={() => {
-                const action = prompt('1: 이름 변경 / 2: 게시판 삭제 / 3: 이 게시판의 자료 전체를 다른 게시판으로 이동', '1');
-                if (action === '1') onRenameSubSub(activeBoard);
-                else if (action === '2') onDeleteSubSub(activeBoard);
-                else if (action === '3') onMoveBoardItems(activeBoard);
-              }}
-            >게시판</button>
+              className={'detail-btn' + (selectMode ? ' amber' : '')}
+              onClick={() => { setSelectMode(v => !v); setSelected({}); }}
+            >{selectMode ? '선택 종료' : '선택'}</button>
+          )}
+          {!isOverview && editMode && !selectMode && (
+            <button className="detail-btn" onClick={() => setBoardMenuOpen(true)}>게시판 관리</button>
           )}
         </div>
       </div>
@@ -3532,8 +3862,8 @@ function SubCategoryPage({
 
       <div className="subcat-page-body">
         {isOverview ? (
-          /* === OVERVIEW MODE: notion body only === */
-          <>
+          /* === OVERVIEW MODE: 문서형 소개 페이지 === */
+          <div className="doc">
             <div className="detail-eyebrow">{getSectionMeta(sectionKey).name}</div>
 
             {editing ? (
@@ -3548,21 +3878,17 @@ function SubCategoryPage({
             )}
 
             {(editing || sub.tagline) && (
-              <div className="props">
-                <div className="props-row">
-                  <div className="props-label">한 줄 소개</div>
-                  <div className="props-value">
-                    {editing ? (
-                      <input
-                        type="text"
-                        value={draft.tagline || ''}
-                        onChange={e => setF('tagline', e.target.value)}
-                        placeholder="예: 출판물 · 잡지 · 브랜딩"
-                      />
-                    ) : (sub.tagline || '')}
-                  </div>
-                </div>
-              </div>
+              editing ? (
+                <input
+                  type="text"
+                  className="doc-lead-input"
+                  value={draft.tagline || ''}
+                  onChange={e => setF('tagline', e.target.value)}
+                  placeholder="한 줄 소개 — 예: 출판물 · 잡지 · 브랜딩"
+                />
+              ) : (
+                <p className="doc-lead">{sub.tagline}</p>
+              )
             )}
 
             <div className="body-section" style={{marginTop: 8}}>
@@ -3584,7 +3910,7 @@ function SubCategoryPage({
                 </div>
               )}
             </div>
-          </>
+          </div>
         ) : (
           /* === BOARD MODE: item grid only === */
           <>
@@ -3637,6 +3963,9 @@ function SubCategoryPage({
                     onEdit={(it)=>onCardEdit({...it, _section: sectionKey})}
                     onDelete={(it)=>onCardDelete({...it, _section: sectionKey})}
                     editMode={editMode}
+                    selectMode={selectMode}
+                    selected={!!selected[item.id]}
+                    onToggleSelect={toggleSelect}
                   />
                 ))}
               </div>
@@ -3644,6 +3973,38 @@ function SubCategoryPage({
           </>
         )}
       </div>
+
+      {/* 선택 액션 바 */}
+      {selectMode && (
+        <div className="selbar">
+          <span className="sb-count">{selectedIds.length}개 선택</span>
+          <button onClick={selectAll}>전체 선택</button>
+          <button
+            className="primary"
+            disabled={selectedIds.length === 0}
+            style={selectedIds.length === 0 ? {opacity:.4, cursor:'default'} : null}
+            onClick={() => { if (selectedIds.length) onBulkMove(selectedIds); }}
+          >이동</button>
+          <button
+            className="danger"
+            disabled={selectedIds.length === 0}
+            style={selectedIds.length === 0 ? {opacity:.4, cursor:'default'} : null}
+            onClick={() => { if (selectedIds.length) onBulkDelete(selectedIds, () => { setSelected({}); }); }}
+          >삭제</button>
+          <button onClick={() => { setSelectMode(false); setSelected({}); }}>완료</button>
+        </div>
+      )}
+
+      {/* 게시판 관리 액션 시트 */}
+      {boardMenuOpen && activeBoard && (
+        <BoardActionSheet
+          board={activeBoard}
+          onClose={() => setBoardMenuOpen(false)}
+          onRename={() => onRenameSubSub(activeBoard)}
+          onMoveAll={() => onMoveBoardItems(activeBoard)}
+          onDelete={() => onDeleteSubSub(activeBoard)}
+        />
+      )}
     </div>
   );
 }
@@ -3655,7 +4016,7 @@ function Detail({ item, sectionKey, data, onClose, onSave, onDelete, onToggleFav
   const fields = SECTION_FIELDS[sectionKey] || [];
   const titleField = fields.find(f => f.isTitle) || fields[0];
 
-  const [editing, setEditing] = useState(item._isNew || false);
+  const [editing, setEditing] = useState(item._isNew || item._forceEdit || false);
   const [draft, setDraft] = useState(item);
 
   // Reset draft when switching to a different item (different id), or when
@@ -4517,6 +4878,8 @@ function App() {
     const clean = { ...item };
     delete clean._section;
     delete clean._isNew;
+    delete clean._forceEdit;
+    delete clean.customTitle;
     setEditingItem(null);
     if (detailItem && String(detailItem.id) === String(clean.id)) {
       setDetailItem({ ...clean, _section: sectionKey });
@@ -4650,37 +5013,74 @@ function App() {
     });
   }
 
-  async function moveBoardItems(fromBoard) {
-    if (!activeSubObj) return;
-    // 이동 대상: 현재 섹션 내 모든 분류의 게시판 목록
+  /* ── 이동 피커 상태: { ids: [...], label, excludeBoardId } ── */
+  const [movePicker, setMovePicker] = useState(null);
+
+  function computeMoveTargets(excludeBoardId) {
     const sec = data.sectionData[activeSection] || {};
     const targets = [];
-    (sec.subCategories || []).forEach(s => {
-      (s.subSubCategories || []).forEach(ss => {
-        if (String(ss.id) === String(fromBoard.id)) return;
-        targets.push({ sub: s, board: ss });
+    (sec.subCategories || []).forEach(sc => {
+      (sc.subSubCategories || []).forEach(ss => {
+        if (excludeBoardId && String(ss.id) === String(excludeBoardId)) return;
+        targets.push({ subId: sc.id, subName: sc.name, boardId: ss.id, boardName: ss.name, type: ss.type });
       });
     });
-    if (targets.length === 0) { alert('이동할 다른 게시판이 없습니다. 먼저 게시판을 만들어 주세요.'); return; }
-    const menu = targets.map((t, i) => `${i + 1}: ${t.sub.name} › ${t.board.name}`).join('\n');
-    const pick = prompt(`"${fromBoard.name}"의 자료를 어디로 옮길까요?\n\n${menu}`, '1');
-    if (pick == null) return;
-    const idx = parseInt(pick, 10) - 1;
-    if (isNaN(idx) || !targets[idx]) { alert('올바른 번호를 입력하세요.'); return; }
-    const target = targets[idx];
+    return targets;
+  }
+
+  async function moveItemsTo(ids, target) {
+    const idSet = new Set(ids.map(String));
     let moved = 0;
     await mutate(draft => {
       const dsec = draft.sectionData[activeSection];
       dsec.items = (dsec.items || []).map(it => {
-        if (String(it.subSubId || '') === String(fromBoard.id)) {
+        if (idSet.has(String(it.id))) {
           moved++;
-          return { ...it, subId: target.sub.id, subSubId: target.board.id };
+          return { ...it, subId: target.subId, subSubId: target.boardId };
         }
         return it;
       });
       return draft;
     });
     showSync(`${moved}건 이동됨`);
+  }
+
+  function moveBoardItems(fromBoard) {
+    const sec = data.sectionData[activeSection] || {};
+    const ids = (sec.items || [])
+      .filter(it => String(it.subSubId || '') === String(fromBoard.id))
+      .map(it => it.id);
+    if (ids.length === 0) { alert('이 게시판에 자료가 없습니다.'); return; }
+    setMovePicker({ ids, label: `"${fromBoard.name}" 자료 ${ids.length}건 이동`, excludeBoardId: fromBoard.id });
+  }
+
+  function bulkMove(ids) {
+    setMovePicker({ ids, label: `선택한 자료 ${ids.length}건 이동`, excludeBoardId: activeSubSub !== 'all' ? activeSubSub : null });
+  }
+
+  function bulkDelete(ids, onDone) {
+    setConfirm({
+      title: '자료 일괄 삭제',
+      text: `선택한 ${ids.length}건을 삭제하시겠습니까? 첨부 파일도 함께 삭제됩니다.`,
+      danger: true,
+      onConfirm: async () => {
+        setConfirm(null);
+        const idSet = new Set(ids.map(String));
+        let filesToCleanup = [];
+        await mutate(draft => {
+          const dsec = draft.sectionData[activeSection];
+          (dsec.items || []).forEach(it => {
+            if (idSet.has(String(it.id)) && it.files) filesToCleanup = filesToCleanup.concat(it.files);
+          });
+          dsec.items = (dsec.items || []).filter(it => !idSet.has(String(it.id)));
+          draft.favorites = (draft.favorites || []).filter(id => !idSet.has(String(id)));
+          return draft;
+        });
+        filesToCleanup.forEach(f => Store.deleteFile(f));
+        showSync(`${ids.length}건 삭제됨`);
+        if (onDone) onDone();
+      }
+    });
   }
 
   async function deleteSubSubCategory(subSub) {
@@ -4937,7 +5337,7 @@ function App() {
                             onOpen={(it)=>setDetailItem({...it, _section: sectionKey})}
                             onToggleFav={toggleFav}
                             isFav={isFav(item.id)}
-                            onEdit={(it)=>setDetailItem({...it, _section: sectionKey})}
+                            onEdit={(it)=>setDetailItem({...it, _section: sectionKey, _forceEdit: true})}
                             onDelete={(it)=>deleteItem({...it, _section: sectionKey})}
                             editMode={editMode}
                           />
@@ -4963,8 +5363,10 @@ function App() {
                   onRenameSubSub={renameSubSubCategory}
                   onDeleteSubSub={deleteSubSubCategory}
                   onMoveBoardItems={moveBoardItems}
+                  onBulkMove={bulkMove}
+                  onBulkDelete={bulkDelete}
                   onCardOpen={(it)=>setDetailItem(it)}
-                  onCardEdit={(it)=>setDetailItem(it)}
+                  onCardEdit={(it)=>setDetailItem({...it, _forceEdit: true})}
                   onCardDelete={(it)=>deleteItem(it)}
                   onToggleFav={toggleFav}
                   isFavId={isFav}
@@ -4973,7 +5375,7 @@ function App() {
                     const now = Date.now();
                     await saveItem({
                       id: uid(),
-                      title: preview.linkTitle || preview.linkDomain || '링크',
+                      title: preview.customTitle || preview.linkTitle || preview.linkDomain || '링크',
                       ...preview,
                       subId: activeSub,
                       subSubId: board ? board.id : (activeSubSub !== 'all' ? activeSubSub : ''),
@@ -5054,6 +5456,19 @@ function App() {
           danger={confirm.danger}
           onConfirm={confirm.onConfirm}
           onCancel={()=>setConfirm(null)}
+        />
+      )}
+      {movePicker && (
+        <MovePickerModal
+          title={movePicker.label}
+          subtitle="이동할 게시판을 선택하세요"
+          targets={computeMoveTargets(movePicker.excludeBoardId)}
+          onPick={async (target) => {
+            const ids = movePicker.ids;
+            setMovePicker(null);
+            await moveItemsTo(ids, target);
+          }}
+          onClose={()=>setMovePicker(null)}
         />
       )}
     </>
