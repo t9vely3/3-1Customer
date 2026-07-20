@@ -1591,7 +1591,7 @@
 
     /* ---------- 분류 인덱스 (랜딩) 변형 ---------- */
     .subcat-landing { padding: 8px 56px 90px; }
-    .index-row.sub { grid-template-columns: 60px 260px 1fr auto 72px; padding: 26px 12px; }
+    .index-row.sub { grid-template-columns: 60px 300px 1fr 72px; padding: 26px 12px; }
     .index-row.sub .ir-title { font-size: 23px; }
     .index-row.add { cursor: pointer; }
     .index-row.add:hover { background: var(--bg-soft); padding-left: 26px; }
@@ -1610,7 +1610,7 @@
       background: transparent; border-color: rgba(245,244,239,0.4); color: #F5F4EF;
     }
     @media (max-width: 900px) {
-      .index-row.sub { grid-template-columns: 40px 1fr auto 60px; }
+      .index-row.sub { grid-template-columns: 40px 1fr 60px; }
       .subcat-landing { padding: 8px 24px 60px; }
     }
 
@@ -1892,50 +1892,93 @@
     .detail-title { font-family: var(--serif); font-weight: 600; letter-spacing: -.02em; word-break: keep-all; }
     .detail-eyebrow { color: var(--muted); letter-spacing: .26em; }
 
-    /* ---------- Cards (자료) ---------- */
+    /* ---------- Cards (자료) — 디렉토리 레퍼런스 스타일 ---------- */
     .grid {
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 18px;
     }
     .card {
-      border-radius: var(--radius);
+      border-radius: 10px;
       overflow: hidden;
       border: 1px solid var(--line-soft);
       background: var(--bg-paper);
-      box-shadow: var(--shadow-card);
-      transition: box-shadow .25s, transform .25s, border-color .25s;
+      box-shadow: 0 1px 2px rgba(11,12,16,0.04);
+      transition: box-shadow .22s, transform .22s, border-color .22s;
+      display: flex; flex-direction: column;
     }
     .card:hover {
       border-color: var(--line);
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-4px);
+      box-shadow: 0 10px 28px rgba(11,12,16,0.10);
+      transform: translateY(-3px);
     }
-    .card-thumb { aspect-ratio: 16 / 9; background: var(--bg-soft); }
+    .card-thumb { aspect-ratio: 16 / 10; background: var(--bg-soft); }
     .card-fav {
       border-radius: 50%; width: 32px; height: 32px;
       box-shadow: 0 1px 4px rgba(11,12,16,0.12);
     }
-    .card-body { padding: 15px 18px 16px; align-items: flex-start; }
-    .card-title {
-      font-family: var(--sans);
-      font-size: 15px; font-weight: 700;
-      letter-spacing: -.015em; line-height: 1.45;
-      word-break: keep-all;
-    }
-    .card-meta {
-      display: flex; align-items: center; gap: 8px;
-      margin-top: 6px;
-      font-size: 11.5px; color: var(--muted-2);
-    }
-    .card-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted-2); flex: none; }
-    .card-domain {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: 11.5px; color: var(--muted);
-      max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .card-domain img { width: 14px; height: 14px; border-radius: 3px; flex: none; }
 
-    /* 플레이스홀더 타일 — 딥 잉크 그라디언트 위에 밝은 제목 (고대비 · 프리미엄) */
+    /* 아이덴티티 행 — 아바타 + 이름 + 타입 태그 */
+    .card-id {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px;
+      min-width: 0;
+    }
+    .card-ava {
+      flex: none;
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #101114; color: #FAFAF8;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      overflow: hidden;
+      border: 1px solid var(--line-soft);
+    }
+    .card-ava img { width: 100%; height: 100%; object-fit: cover; background: #fff; }
+    .card-name {
+      flex: 1; min-width: 0;
+      font-size: 13.5px; font-weight: 700;
+      color: var(--ink-strong);
+      letter-spacing: -.01em;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .card-tag {
+      flex: none;
+      font-style: normal;
+      font-size: 8px; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--amber);
+      align-self: flex-start;
+      margin-top: 2px;
+    }
+    .card-edit-actions { display: inline-flex; gap: 2px; flex: none; }
+    .card-edit-btn { border-radius: 8px; }
+
+    /* 프로퍼티 행 — 라벨 좌측 / 값 우측 */
+    .card-props { padding: 0 16px 6px; }
+    .card-props .cp {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+      padding: 11px 0;
+      border-top: 1px solid var(--line-soft);
+    }
+    .card-props .cp span {
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--muted-2);
+      flex: none;
+    }
+    .card-props .cp a,
+    .card-props .cp em {
+      font-style: normal;
+      font-size: 12px; font-weight: 500;
+      color: var(--amber);
+      text-decoration: none;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      min-width: 0;
+    }
+    .card-props .cp em { color: var(--muted); }
+    .card-props .cp a:hover { text-decoration: underline; }
+
+    /* 플레이스홀더 타일 — 딥 잉크 + 밝은 제목 */
     .card-ph {
       width: 100%; height: 100%;
       display: flex; flex-direction: column; justify-content: flex-end;
@@ -1948,9 +1991,9 @@
       width: 22px; height: 2px; background: rgba(245,245,243,0.5);
     }
     .card-ph-title {
-      font-family: var(--serif);
-      font-size: 16.5px; font-weight: 600; line-height: 1.5;
-      letter-spacing: -.01em;
+      font-family: var(--sans);
+      font-size: 15.5px; font-weight: 700; line-height: 1.5;
+      letter-spacing: -.015em;
       color: #F5F4EF;
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
       overflow: hidden;
@@ -1977,7 +2020,6 @@
     .card:hover .card-linkout { opacity: 1; }
     .card-linkout:hover { background: #fff; }
     .card-linkout svg { width: 14px; height: 14px; stroke: var(--ink); stroke-width: 1.8; fill: none; }
-
     /* ---------- 콘텐츠 타입 탭 (게시판 내부: 전체/영상/사진/링크) ---------- */
     .type-tabs {
       display: inline-flex; gap: 2px;
@@ -2728,24 +2770,17 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, 
           <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
         </button>
       </div>
-      <div className="card-body card-body-compact">
-        <div style={{flex: 1, minWidth: 0}}>
-          <div className="card-title">{title}</div>
-          {(isLink || item.updatedAt || item.createdAt) && (
-            <div className="card-meta">
-              {isLink && (
-                <span className="card-domain">
-                  {getFavicon(item.linkUrl) && <img src={getFavicon(item.linkUrl)} alt="" />}
-                  {item.linkDomain || getDomain(item.linkUrl)}
-                </span>
-              )}
-              {isLink && (item.updatedAt || item.createdAt) && <span className="dot" />}
-              {(item.updatedAt || item.createdAt) && <span>{fmtDate(item.updatedAt || item.createdAt)}</span>}
-            </div>
-          )}
-        </div>
+      {/* 아이덴티티 행: 아바타 + 이름 + 타입 태그 */}
+      <div className="card-id">
+        <span className="card-ava">
+          {isLink && getFavicon(item.linkUrl)
+            ? <img src={getFavicon(item.linkUrl)} alt="" onError={(e)=>{e.target.style.display='none';}} />
+            : title.slice(0, 1)}
+        </span>
+        <b className="card-name">{title}</b>
+        <i className="card-tag">{TYPE_LABELS[itemType(item)]}</i>
         {editMode && (
-          <div className="card-edit-actions">
+          <span className="card-edit-actions">
             <button className="card-edit-btn"
               onClick={(e)=>{e.stopPropagation();onEdit(item);}} title="편집">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -2758,6 +2793,30 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, isFav, 
                 <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>
               </svg>
             </button>
+          </span>
+        )}
+      </div>
+      {/* 프로퍼티 행: 라벨 좌측 / 값 우측 */}
+      <div className="card-props">
+        {isLink && (
+          <div className="cp">
+            <span>Website</span>
+            <a
+              href={item.linkUrl} target="_blank" rel="noopener noreferrer"
+              onClick={(e)=>e.stopPropagation()}
+            >{item.linkDomain || getDomain(item.linkUrl)}</a>
+          </div>
+        )}
+        {(item.updatedAt || item.createdAt) && (
+          <div className="cp">
+            <span>Date</span>
+            <em>{fmtDate(item.updatedAt || item.createdAt)}</em>
+          </div>
+        )}
+        {subCatName && (
+          <div className="cp">
+            <span>Category</span>
+            <em>{subCatName}</em>
           </div>
         )}
       </div>
@@ -3462,7 +3521,6 @@ function SubCategoryPage({
                 onClick={() => setActiveSubSub(ss.id)}
               >
                 {ss.name}
-                <span className="board-chip-count">{c}</span>
               </button>
             );
           })}
@@ -3547,15 +3605,12 @@ function SubCategoryPage({
                       onClick={() => setTypeFilter(t)}
                     >
                       {TYPE_LABELS[t]}
-                      <span className="cnt">{typeCounts[t]}</span>
                     </button>
                   );
                 })}
               </div>
             )}
-            <div style={{fontSize: 13, color: 'var(--muted)', marginBottom: 24}}>
-              {filtered.length}건
-            </div>
+
 
             {activeBoard && activeBoard.type === 'link' && editMode && (
               <LinkQuickAdd onAdd={(preview) => onQuickAddLink(preview, activeBoard)} />
@@ -4852,12 +4907,6 @@ function App() {
                   </h1>
                   <div className="header-meta">
                     <span>{currentSection.sub || '자주 보여주는 자료 모음'}</span>
-                    <span className="dot"></span>
-                    <span>
-                      {isFavView
-                        ? `${filteredItems.length}건`
-                        : `${subCategories.length}개 분류 · ${allItems.length}건`}
-                    </span>
                   </div>
                 </div>
                 <div className="header-actions">
@@ -4961,7 +5010,6 @@ function App() {
                             <span className="ir-desc">
                               {sub.tagline || (subSubCount > 0 ? `게시판 ${subSubCount}개` : '')}
                             </span>
-                            <span className="ir-count">{c}<i>건</i></span>
                             {editMode ? (
                               <span className="ir-actions" onClick={(e)=>e.stopPropagation()}>
                                 <button title="이름 변경" onClick={() => renameSubCategory(sub)}>✎</button>
@@ -4978,7 +5026,6 @@ function App() {
                           <span className="ir-num">+</span>
                           <span className="ir-title" style={{fontSize: 18, color: 'var(--muted)'}}>새 분류 추가</span>
                           <span className="ir-desc"></span>
-                          <span className="ir-count"></span>
                           <span className="ir-arrow"></span>
                         </div>
                       )}
