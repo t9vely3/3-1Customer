@@ -2445,6 +2445,85 @@
     }
     .picker-foot button:hover { border-color: var(--ink-strong); }
 
+    /* ---------- 분류 커버 타일 그리드 ---------- */
+    .cover-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+      margin-top: 8px;
+    }
+    .cover-tile {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      background: #16171E;
+      box-shadow: 0 1px 2px rgba(11,12,16,0.06);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .cover-tile:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(11,12,16,0.18); }
+    .ct-img, .ct-ph {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .45s ease;
+    }
+    .cover-tile:hover .ct-img { transform: scale(1.05); }
+    .ct-shade {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(10,10,13,0.78) 0%, rgba(10,10,13,0.18) 45%, rgba(10,10,13,0.12) 100%);
+      pointer-events: none;
+    }
+    .ct-num {
+      position: absolute; top: 14px; left: 16px;
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      color: rgba(250,250,248,0.75);
+    }
+    .ct-name {
+      position: absolute; left: 16px; right: 48px; bottom: 14px;
+      font-size: 19px; font-weight: 800; letter-spacing: -.025em;
+      color: #FAFAF8;
+      word-break: keep-all;
+      line-height: 1.3;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.35);
+    }
+    .ct-arrow {
+      position: absolute; right: 16px; bottom: 14px;
+      font-size: 16px; color: rgba(250,250,248,0.75);
+      transition: transform .2s;
+    }
+    .cover-tile:hover .ct-arrow { transform: translateX(4px); color: #FAFAF8; }
+    .ct-actions {
+      position: absolute; top: 10px; right: 10px;
+      display: flex; gap: 5px;
+      opacity: 0;
+      transition: opacity .18s;
+    }
+    .cover-tile:hover .ct-actions { opacity: 1; }
+    .ct-actions button {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.92);
+      color: var(--ink);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      backdrop-filter: blur(4px);
+      transition: background .15s, transform .15s;
+    }
+    .ct-actions button:hover { background: #fff; transform: scale(1.08); }
+    .ct-actions button svg { width: 14px; height: 14px; }
+    .cover-tile.add {
+      background: transparent;
+      border: 1.5px dashed var(--line-strong);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: none;
+    }
+    .cover-tile.add:hover { border-color: var(--ink-strong); transform: none; box-shadow: none; }
+    .ct-add { font-size: 14px; font-weight: 600; color: var(--muted); }
+    .cover-tile.add:hover .ct-add { color: var(--ink-strong); }
+
     /* ---------- 플로팅 편집 토글 ---------- */
     .edit-fab {
       position: fixed;
@@ -5357,6 +5436,45 @@ function App() {
     });
   }
 
+  /* 분류 커버 이미지 지정 */
+  const coverInputRef = useRef(null);
+  const coverTargetRef = useRef(null);
+  function pickSubCover(sub) {
+    coverTargetRef.current = sub;
+    if (coverInputRef.current) coverInputRef.current.click();
+  }
+  async function handleCoverFile(e) {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    const sub = coverTargetRef.current;
+    if (!file || !sub) return;
+    try {
+      showSync('이미지 업로드 중…');
+      const result = await Store.uploadFile(file);
+      if (sub.coverFile) Store.deleteFile(sub.coverFile);
+      await mutate(draft => {
+        const sec = draft.sectionData[activeSection];
+        sec.subCategories = (sec.subCategories || []).map(sc =>
+          String(sc.id) === String(sub.id) ? { ...sc, coverUrl: result.directUrl, coverFile: result } : sc
+        );
+        return draft;
+      });
+      showSync('커버 이미지 적용됨');
+    } catch(err) {
+      alert('업로드 실패: ' + (err.message || err));
+    }
+  }
+  async function removeSubCover(sub) {
+    if (sub.coverFile) Store.deleteFile(sub.coverFile);
+    await mutate(draft => {
+      const sec = draft.sectionData[activeSection];
+      sec.subCategories = (sec.subCategories || []).map(sc =>
+        String(sc.id) === String(sub.id) ? { ...sc, coverUrl: '', coverFile: null } : sc
+      );
+      return draft;
+    });
+  }
+
   async function deleteSubCategory(sub) {
     setConfirm({
       title: '분류 삭제',
@@ -5368,7 +5486,11 @@ function App() {
         await mutate(draft => {
           const sec = draft.sectionData[activeSection];
           const itemsToRemove = (sec.items || []).filter(x => String(x.subId) === String(sub.id));
-          itemsToRemove.forEach(it => (it.files || []).forEach(f => filesToCleanup.push(f)));
+          itemsToRemove.forEach(it => {
+            (it.files || []).forEach(f => filesToCleanup.push(f));
+            if (it.thumbFile) filesToCleanup.push(it.thumbFile);
+          });
+          if (sub.coverFile) filesToCleanup.push(sub.coverFile);
           const removeIds = new Set(itemsToRemove.map(x => x.id));
           sec.items = (sec.items || []).filter(x => !removeIds.has(x.id));
           sec.subCategories = (sec.subCategories || []).filter(s => String(s.id) !== String(sub.id));
@@ -5869,40 +5991,55 @@ function App() {
                       <div className="empty-text">편집 모드에서 분류를 추가할 수 있습니다.</div>
                     </div>
                   ) : (
-                    <div className="index-list">
-                      {subCategories.map((sub, idx) => {
-                        const c = allItems.filter(it => String(it.subId) === String(sub.id)).length;
-                        const subSubCount = (sub.subSubCategories || []).length;
-                        return (
-                          <div
-                            key={sub.id}
-                            className="index-row sub"
-                            onClick={() => navigateToSub(sub.id)}
-                          >
-                            <span className="ir-num">{String(idx + 1).padStart(2, '0')}</span>
-                            <span className="ir-title">{sub.name}</span>
-                            <span className="ir-desc">
-                              {sub.tagline || (subSubCount > 0 ? `게시판 ${subSubCount}개` : '')}
+                    <div className="cover-grid">
+                      {subCategories.map((sub, idx) => (
+                        <div
+                          key={sub.id}
+                          className="cover-tile"
+                          onClick={() => navigateToSub(sub.id)}
+                        >
+                          {sub.coverUrl ? (
+                            <img className="ct-img" src={sub.coverUrl} alt="" loading="lazy" />
+                          ) : (
+                            <div className="ct-ph" style={{ background: phGradient(sub.name) }} />
+                          )}
+                          <div className="ct-shade" />
+                          <span className="ct-num">{String(idx + 1).padStart(2, '0')}</span>
+                          <span className="ct-name">{sub.name}</span>
+                          <span className="ct-arrow">→</span>
+                          {editMode && (
+                            <span className="ct-actions" onClick={(e)=>e.stopPropagation()}>
+                              <button title="커버 이미지 변경" onClick={() => pickSubCover(sub)}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                  <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                              </button>
+                              {sub.coverUrl && (
+                                <button title="커버 제거" onClick={() => removeSubCover(sub)}>
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M18 6L6 18M6 6l12 12"/>
+                                  </svg>
+                                </button>
+                              )}
+                              <button title="이름 변경" onClick={() => renameSubCategory(sub)}>✎</button>
+                              <button title="삭제" onClick={() => deleteSubCategory(sub)}>×</button>
                             </span>
-                            {editMode ? (
-                              <span className="ir-actions" onClick={(e)=>e.stopPropagation()}>
-                                <button title="이름 변경" onClick={() => renameSubCategory(sub)}>✎</button>
-                                <button title="삭제" onClick={() => deleteSubCategory(sub)}>×</button>
-                              </span>
-                            ) : (
-                              <span className="ir-arrow">→</span>
-                            )}
-                          </div>
-                        );
-                      })}
+                          )}
+                        </div>
+                      ))}
                       {editMode && (
-                        <div className="index-row add" onClick={addSubCategory}>
-                          <span className="ir-num">+</span>
-                          <span className="ir-title" style={{fontSize: 18, color: 'var(--muted)'}}>새 분류 추가</span>
-                          <span className="ir-desc"></span>
-                          <span className="ir-arrow"></span>
+                        <div className="cover-tile add" onClick={addSubCategory}>
+                          <span className="ct-add">+ 새 분류</span>
                         </div>
                       )}
+                      <input
+                        ref={coverInputRef}
+                        type="file"
+                        accept="image/*"
+                        style={{display:'none'}}
+                        onChange={handleCoverFile}
+                      />
                     </div>
                   )}
                 </div>
