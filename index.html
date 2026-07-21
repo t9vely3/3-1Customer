@@ -1011,18 +1011,19 @@
       background: linear-gradient(135deg, rgba(44,79,224,0.14), rgba(14,21,37,0.06));
     }
     .subcat-page-body {
-      max-width: 920px;
+      max-width: 1080px;
       margin: 0 auto;
-      padding: 28px 36px 60px;
+      padding: 34px 44px 90px;
     }
 
     .board-bar {
       display: flex; align-items: center; gap: 6px;
-      padding: 10px 36px;
-      max-width: 100%;
+      padding: 12px 44px;
+      max-width: 1080px;
+      margin: 0 auto;
       flex-wrap: wrap;
-      border-bottom: 1px solid var(--line-soft);
-      background: var(--bg);
+      border-bottom: none;
+      background: transparent;
     }
     .board-chip {
       display: inline-flex; align-items: center; gap: 8px;
@@ -2445,6 +2446,40 @@
     }
     .picker-foot button:hover { border-color: var(--ink-strong); }
 
+    /* ---------- 게시판 화면 위계 통일 ---------- */
+    .subcat-page .detail-eyebrow {
+      font-size: 10px; letter-spacing: .3em;
+      margin-bottom: 12px;
+    }
+    .subcat-page .detail-title {
+      font-size: clamp(30px, 3.4vw, 42px);
+      line-height: 1.15;
+      margin-bottom: 22px;
+    }
+    .card-thumb.poster {
+      display: flex; align-items: center; justify-content: center;
+      background: #16171E;
+    }
+    .card-thumb.poster .thumb-bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: blur(30px) saturate(1.05) brightness(.65);
+      transform: scale(1.45);
+      opacity: .6;
+    }
+    .card-thumb.poster .thumb-main {
+      position: relative; z-index: 1;
+      width: auto; height: auto;
+      max-width: 76%; max-height: 88%;
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    .card-id { padding: 13px 16px 12px; gap: 9px; }
+    .card-props { padding: 0 16px 4px; }
+    .card-props .cp { padding: 10px 0; }
+
     /* ---------- 분류 커버 타일 그리드 ---------- */
     .cover-grid {
       display: grid;
@@ -3376,19 +3411,20 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, onRenam
   }
   return (
     <div className={'card' + (selectMode ? ' selectable' : '') + (selected ? ' selected' : '')} onClick={handleClick}>
-      <div className={'card-thumb' + (thumbMode === 'logo' ? ' logo' : '') + (thumbMode === 'fit' ? ' fit' : '')}>
+      <div className={'card-thumb' + (thumbMode === 'logo' ? ' logo' : '') + (thumbMode === 'fit' ? ' fit' : '') + (thumbMode === 'poster' ? ' poster' : '')}>
         {selectMode && <span className="card-check">✓</span>}
         {thumb ? (
           <>
-            {(thumbMode === 'logo' || thumbMode === 'fit') && <img className="thumb-bg" src={thumb} alt="" aria-hidden="true" />}
+            {thumbMode !== 'cover' && <img className="thumb-bg" src={thumb} alt="" aria-hidden="true" />}
             <img
               className="thumb-main"
               src={thumb} alt="" loading="lazy"
               onLoad={(e) => {
                 const w = e.target.naturalWidth, h = e.target.naturalHeight;
                 if (!(w > 0 && h > 0)) return;
-                // 정사각/세로형 → 로고 카드, 와이드지만 저해상도 → 레터박스(fit)
-                if (w / h < 1.35 || (w < 380 && h < 380)) setThumbMode('logo');
+                // 세로형 포스터 → 크게, 정사각 로고 → 작게, 와이드 저해상도 → 레터박스
+                if (w / h < 0.92) setThumbMode('poster');
+                else if (w / h < 1.35 || (w < 380 && h < 380)) setThumbMode('logo');
                 else if (w < 640) setThumbMode('fit');
               }}
               onError={(e) => {
@@ -3438,11 +3474,13 @@ function Card({ item, sectionKey, onOpen, onToggleFav, onEdit, onDelete, onRenam
       </div>
       {/* 아이덴티티 행: 아바타 + 이름 + 타입 태그 */}
       <div className="card-id">
-        <span className="card-ava">
-          {isLink && getFavicon(item.linkUrl)
-            ? <img src={getFavicon(item.linkUrl)} alt="" onError={(e)=>{e.target.style.display='none';}} />
-            : title.slice(0, 1)}
-        </span>
+        {isLink && (
+          <span className="card-ava">
+            {getFavicon(item.linkUrl)
+              ? <img src={getFavicon(item.linkUrl)} alt="" onError={(e)=>{e.target.style.display='none';}} />
+              : title.slice(0, 1)}
+          </span>
+        )}
         {nameDraft !== null ? (
           <input
             className="card-name-input"
