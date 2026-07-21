@@ -2445,6 +2445,48 @@
     }
     .picker-foot button:hover { border-color: var(--ink-strong); }
 
+    /* ---------- 플로팅 편집 토글 ---------- */
+    .edit-fab {
+      position: fixed;
+      right: 26px; bottom: 26px;
+      z-index: 250;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 0 20px;
+      height: 50px;
+      border-radius: 999px;
+      background: var(--bg-paper);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 13px; font-weight: 700;
+      box-shadow: 0 8px 26px rgba(11,12,16,0.16);
+      cursor: pointer;
+      transition: transform .18s, background .2s, color .2s, box-shadow .2s;
+    }
+    .edit-fab svg { width: 17px; height: 17px; }
+    .edit-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(11,12,16,0.22); }
+    .edit-fab.on {
+      background: #101114;
+      border-color: #101114;
+      color: #FAFAF8;
+    }
+    .edit-fab.on::before {
+      content: '';
+      position: absolute; inset: -4px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(16,17,20,0.25);
+      animation: fabPulse 2s ease-out infinite;
+      pointer-events: none;
+    }
+    @keyframes fabPulse {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.12); opacity: 0; }
+    }
+    @media (max-width: 700px) {
+      .edit-fab { right: 16px; bottom: 16px; height: 46px; padding: 0 16px; }
+      .edit-fab-label { display: none; }
+      .edit-fab { padding: 0; width: 46px; justify-content: center; }
+    }
+
     /* ---------- 교육과정 비전 히어로 ---------- */
     .vision-hero {
       display: flex; align-items: stretch; gap: 20px;
@@ -5655,6 +5697,24 @@ function App() {
             </div>
           </div>
         </aside>
+
+        {/* 플로팅 편집 모드 토글 — 어디서든 한 번에 */}
+        <button
+          className={'edit-fab' + (editMode ? ' on' : '')}
+          onClick={() => setEditMode(v => !v)}
+          title={editMode ? '편집 모드 끄기' : '편집 모드 켜기'}
+        >
+          {editMode ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75z"/><path d="M14.06 6.19l3.75 3.75"/>
+            </svg>
+          )}
+          <span className="edit-fab-label">{editMode ? '편집 중' : '편집'}</span>
+        </button>
 
         {/* MAIN */}
         <main className="main" style={(activeSection==='home' && !detailItem) ? {background:'transparent',padding:0} : (detailItem ? {background:'transparent',padding:0} : {})}>
